@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>BeepSort</title>
+        <style>
+            #visualizer {
+                width: 100%;
+                display: flex;
+            }
+            #visualizer-controls {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <h1>Hello world</h1>
+            <div id="visualizer">
+                <canvas id="canvas" width="2000" height="1000" style="border: black 3px solid"></canvas>
+                <div id="visualizer-controls">
+                    <label>
+                        Select algorithm
+                        <select name="algoSelect" id="algoSelect"></select>
+                    </label>
+                    <label>
+                        List length
+                        <input id="listLength" type="number" value="1000" min="0" step="1">
+                    </label>
+                    <label>
+                        Speed
+                        <input id="speed" type="number" value="1" min="1" step="1">
+                    </label>
+                    <button id="button">Test</button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
