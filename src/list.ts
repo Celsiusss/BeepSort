@@ -7,6 +7,7 @@ export class List {
     private list: number[];
 
     public drawFn: (l: List) => void;
+    public playAudioFn: (n: number) => void;
     public simulate = true;
     public drawEvery = 1;
 
@@ -42,6 +43,7 @@ export class List {
             } else {
                 this.drawCounter = 0;
                 this.drawFn(this);
+                this.playAudioFn(n);
                 await timeout();
             }
         }

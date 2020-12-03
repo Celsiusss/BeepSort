@@ -16,12 +16,13 @@ document.getElementById('button').addEventListener('click', async event => {
     const selected = select.options[select.selectedIndex].value;
     const length = +lengthInput.value;
     audio = new Audio(length);
-    audio.play();
+    await audio.play();
     // @ts-ignore
     const algorithm = <Algorithms>Algorithms[selected];
 
     const list = new List();
     list.drawFn = drawArray.bind(list);
+    list.playAudioFn = audio.update.bind(audio);
     list.drawEvery = +speedInput.value;
     list.additionalInformation.shuffling = true;
     await list.populate(length, true);
@@ -36,7 +37,6 @@ document.getElementById('button').addEventListener('click', async event => {
     const sortingAlgorithm = AlgorithmFactory.getAlgorithm(algorithm);
     await sortingAlgorithm.sort(list);
     drawArray(list);
-    audio.stop();
 });
 
 const drawArray = (list: List) => {
@@ -45,7 +45,7 @@ const drawArray = (list: List) => {
     const width = canvas.width / list.length;
     const height = canvas.height / list.length;
     for (let i = 0; i < list.length; i++) {
-        const hue = 255 - (i / list.length) * 255;
+        const hue = 255 - (list.get(i) / list.length) * 255;
         context.fillStyle = '#' + hsl.hex([hue, 100, 50]);
         context.fillRect(
             i * width,
@@ -53,7 +53,6 @@ const drawArray = (list: List) => {
             width,
             Math.ceil(list.get(i) * height)
         );
-        audio.update(i);
     }
     printInformation(list.additionalInformation);
 };

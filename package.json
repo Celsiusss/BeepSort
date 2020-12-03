@@ -4,7 +4,7 @@
     "description": "",
     "private": true,
     "scripts": {
-        "dev": "webpack serve",
+        "start": "webpack serve",
         "build": "webpack"
     },
     "keywords": [],
@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "color-convert": "^2.0.1",
-        "es6-promisify": "^6.1.1"
+        "es6-promisify": "^6.1.1",
+        "tone": "^14.7.58"
     }
 }

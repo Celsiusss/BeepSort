@@ -1,31 +1,35 @@
+import * as Tone from 'tone';
+
 export class Audio {
-    private context = new AudioContext();
+    private readonly synth: Tone.Synth;
 
     private readonly maxFreq = 800;
     private readonly toneSpan: number;
 
-    private oscillator: OscillatorNode;
+    private prevTime = -1;
 
     constructor(length: number) {
+        this.synth = new Tone.Synth().toDestination();
+        this.synth.volume.value = -10;
+        this.synth.detune.value = 100;
         this.toneSpan = length;
-        const gainNode = this.context.createGain();
-        this.oscillator = this.context.createOscillator();
-        this.oscillator.connect(gainNode);
-        this.oscillator.type = 'sine';
-        gainNode.connect(this.context.destination);
-        this.oscillator.detune.value = 100;
-        gainNode.gain.value = 0.01;
     }
 
-    public play() {
-        this.oscillator.start();
+    public async play() {
+        await Tone.start();
     }
 
     public update(num: number) {
-        this.oscillator.frequency.value = (num / this.toneSpan) * this.maxFreq;
-    }
-
-    public stop() {
-        this.oscillator.stop();
+        let now = Tone.now();
+        // sometimes this function is called multiple times at once,
+        // and tone js does not like that, so we slightly increase the
+        // timing if that happens
+        while (now <= this.prevTime) {
+            now += 0.0001;
+        }
+        this.prevTime = now;
+        const freq = (num / this.toneSpan) * this.maxFreq;
+        const vel = 0.6;
+        this.synth.triggerAttackRelease(freq, 0.1, now, vel);
     }
 }
