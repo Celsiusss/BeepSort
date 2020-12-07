@@ -1,10 +1,9 @@
 import { Algorithm } from './algorithm';
-import { List } from '../list';
+import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export class InsertionSort implements Algorithm {
-    async sort(list: List): Promise<void> {
-        const origSpeed = list.drawEvery;
-        list.drawEvery = list.drawEvery * 10;
+    async sort(list: AsyncListVisualizer): Promise<void> {
+        list.speedMultiplier = 10;
         let i = 1;
         while (i < list.length) {
             let j = i;
@@ -15,7 +14,6 @@ export class InsertionSort implements Algorithm {
             }
             i++;
         }
-        list.drawEvery = origSpeed;
     }
 
 }

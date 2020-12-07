@@ -1,29 +1,49 @@
+import './styling/global.scss';
 import { hsl } from 'color-convert';
-import { List } from './list';
+import { AsyncListVisualizer } from './async-list-visualizer';
 import { AlgorithmFactory, Algorithms } from './algorithm-factory';
 import { AdditionalAlgorithmInformation } from './models/additional-algorithm-information';
 import { Audio } from './audio';
+import { Controls } from './controls';
+import { Configuration } from './configuration';
+
+// TODO: refactor this entire file
 
 const select = <HTMLSelectElement>document.getElementById('algoSelect');
 const lengthInput = <HTMLInputElement>document.getElementById('listLength');
 const speedInput = <HTMLInputElement>document.getElementById('speed');
+const canvasContainer = <HTMLDivElement>document.getElementById('ccontainer');
 const canvas = <HTMLCanvasElement>document.getElementById('canvas');
 const context = canvas.getContext('2d');
 
+const configuration = new Configuration({});
+
 let audio = new Audio(0);
+let list = new AsyncListVisualizer();
 
 document.getElementById('button').addEventListener('click', async event => {
     const selected = select.options[select.selectedIndex].value;
     const length = +lengthInput.value;
-    audio = new Audio(length);
-    await audio.play();
-    // @ts-ignore
-    const algorithm = <Algorithms>Algorithms[selected];
+    list = new AsyncListVisualizer();
 
-    const list = new List();
+    if (configuration.controls.audio) {
+        audio = new Audio(length);
+        await audio.play();
+        list.playAudioFn = audio.update.bind(audio);
+    } else {
+        list.playAudioFn = () => {};
+    }
+    // @ts-ignore
+    const algorithm = <Algorithms>Algorithms[selected]; // TODO: find a better solution for this
+
+    const controlsSubscription = Controls.controlsSubject.subscribe(config => {
+        list.drawEvery = config.speed;
+        list.playAudioFn = config.audio ? audio.update.bind(audio) : () => {};
+        list.changeDelay(config.waitDelay);
+    });
+
     list.drawFn = drawArray.bind(list);
-    list.playAudioFn = audio.update.bind(audio);
-    list.drawEvery = +speedInput.value;
+    list.drawEvery = +configuration.controls.speed;
     list.additionalInformation.shuffling = true;
     await list.populate(length, true);
     drawArray(list);
@@ -37,16 +57,32 @@ document.getElementById('button').addEventListener('click', async event => {
     const sortingAlgorithm = AlgorithmFactory.getAlgorithm(algorithm);
     await sortingAlgorithm.sort(list);
     drawArray(list);
+
+    controlsSubscription.unsubscribe();
 });
 
-const drawArray = (list: List) => {
+document.getElementById('button-pause').addEventListener('click', event => {
+    list.paused = true;
+});
+document.getElementById('button-resume').addEventListener('click', event => {
+    list.paused = false;
+});
+
+document
+    .getElementsByClassName('controls-container')
+    .item(0)
+    .addEventListener('input', Controls.inputHandler.bind(null, configuration.controls));
+
+const drawArray = (list: AsyncListVisualizer) => {
+    const hasColors = configuration.controls.colors;
     context.fillStyle = '#000000';
     context.fillRect(0, 0, canvas.width, canvas.height);
     const width = canvas.width / list.length;
     const height = canvas.height / list.length;
     for (let i = 0; i < list.length; i++) {
         const hue = 255 - (list.get(i) / list.length) * 255;
-        context.fillStyle = '#' + hsl.hex([hue, 100, 50]);
+        const color = hasColors ? hsl.hex([hue, 100, 50]) : 'fff';
+        context.fillStyle = '#' + color;
         context.fillRect(
             i * width,
             list.length * height - Math.ceil(list.get(i) * height),
@@ -74,6 +110,9 @@ const printInformation = (information: AdditionalAlgorithmInformation) => {
     context.fillText('Comparisons: ' + Intl.NumberFormat().format(comparisons), 0, fontSize * 3);
 };
 (async () => {
+    canvas.width = canvasContainer.clientWidth;
+    canvas.height = canvasContainer.clientHeight;
+
     context.imageSmoothingEnabled = false;
     context.fillStyle = '#000000';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -85,3 +124,8 @@ const printInformation = (information: AdditionalAlgorithmInformation) => {
         select.appendChild(element);
     }
 })();
+
+window.onresize = () => {
+    canvas.width = canvasContainer.clientWidth;
+    canvas.height = canvasContainer.clientHeight;
+};

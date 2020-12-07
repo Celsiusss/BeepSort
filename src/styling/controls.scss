@@ -1,0 +1,96 @@
+@import 'variables';
+
+.controls-container {
+    padding: 0 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.tabs {
+    display: flex;
+    justify-content: flex-start;
+    .tab {
+        background-color: $background-color;
+        cursor: pointer;
+        font-size: 15px;
+        padding: 7px 15px;
+        border: white;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+    .tab:hover {
+        background-color: $hover-tab-color;
+    }
+    .tab.active {
+        background-color: $lighter-background-color;
+    }
+}
+
+.controls-title {
+    font-size: 18px;
+}
+.controls-sections {
+    background-color: $lighter-background-color;
+    display: flex;
+    flex-direction: column;
+}
+.controls-divider {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    width: 95%;
+    border: 0;
+    border-bottom: 1px solid #484848;
+}
+.controls-sections:last-child {
+    //flex-grow: 1;
+}
+.controls-section {
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    height: 100%;
+}
+
+.controls-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    padding: 2px 0;
+    .label-text {
+        margin: auto 0;
+    }
+    .controls-input {
+        box-sizing: content-box;
+        background-color: $input-background-color;
+        padding: 3px 4px;
+        border: 1px solid $input-border-color;
+        border-radius: 4px;
+        color: $text-color;
+        width: 120px;
+        float: right;
+    }
+    .controls-input:focus {
+        background-color: $input-background-color-selected;
+        outline: none;
+        border: 1px solid $accent-color;
+    }
+    .controls-input[type="checkbox"] {
+        margin-right: 12px;
+        width: unset;
+    }
+}
+.controls-button {
+    padding: 4px 14px;
+    background-color: $button-color;
+    color: $text-color;
+    border: 1px solid $button-border-color;
+    border-radius: 4px;
+}
+.controls-button:focus {
+    outline: none;
+}
+.controls-button:active {
+    background-color: $button-color-selected;
+    border: 1px solid $accent-color;
+}

@@ -1,8 +1,8 @@
 import { Algorithm } from './algorithm';
-import { List } from '../list';
+import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export class Quicksort implements Algorithm {
-    async sort(list: List, low = 0, high = list.length - 1): Promise<void> {
+    async sort(list: AsyncListVisualizer, low = 0, high = list.length - 1): Promise<void> {
         if (low < high) {
             const pi = await this.partition(list, high, low);
             await this.sort(list, low, pi - 1); // Before pi
@@ -10,7 +10,7 @@ export class Quicksort implements Algorithm {
         }
     }
 
-    private async partition(list: List, hi: number, lo: number): Promise<number> {
+    private async partition(list: AsyncListVisualizer, hi: number, lo: number): Promise<number> {
         const pivot = list.get(hi);
         let i = lo - 1;
         for (let j = lo; j <= hi - 1; j++) {

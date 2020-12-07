@@ -2,37 +2,113 @@
 <html lang="en">
     <head>
         <title>BeepSort</title>
-        <style>
-            #visualizer {
-                width: 100%;
-                display: flex;
-            }
-            #visualizer-controls {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-        </style>
     </head>
     <body>
-        <div>
-            <h1>Hello world</h1>
+        <div class="page-container">
+            <div class="toolbar">
+                <h1 class="main-title">Beep Sort</h1>
+                <div class="toolbar-buttons">
+                    <button id="button-resume">Resume</button>
+                    <button id="button-pause">Pause</button>
+                    <button>Next</button>
+                </div>
+            </div>
             <div id="visualizer">
-                <canvas id="canvas" width="2000" height="1000" style="border: black 3px solid"></canvas>
-                <div id="visualizer-controls">
-                    <label>
-                        Select algorithm
-                        <select name="algoSelect" id="algoSelect"></select>
-                    </label>
-                    <label>
-                        List length
-                        <input id="listLength" type="number" value="1000" min="0" step="1">
-                    </label>
-                    <label>
-                        Speed
-                        <input id="speed" type="number" value="1" min="1" step="1">
-                    </label>
-                    <button id="button">Test</button>
+                <div id="ccontainer" class="canvas-container">
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div class="controls-container">
+                    <div class="tabs">
+                        <div class="tab active">
+                            <span class="tab-text">Controls</span>
+                        </div>
+                        <div class="tab">
+                            <span class="tab-text">Presentation</span>
+                        </div>
+                    </div>
+                    <div class="controls-sections">
+
+                        <div class="controls-section">
+                            <label class="controls-label">
+                                <span class="label-text">Audio</span>
+                                <input
+                                    class="controls-input"
+                                    id="audio"
+                                    type="checkbox"
+                                    value="1"
+                                    checked
+                                />
+                            </label>
+                        </div>
+
+                        <hr class="controls-divider" />
+
+                        <div class="controls-section">
+                            <label class="controls-label">
+                                <span class="label-text">Colors</span>
+                                <input
+                                    class="controls-input"
+                                    id="color"
+                                    type="checkbox"
+                                    checked
+                                />
+                            </label>
+                        </div>
+
+                        <hr class="controls-divider" />
+
+                        <div class="controls-section">
+                            <label class="controls-label">
+                                <span class="label-text">Speed</span>
+                                <input
+                                    class="controls-input"
+                                    id="speed"
+                                    type="number"
+                                    value="1"
+                                    min="1"
+                                    step="1"
+                                />
+                            </label>
+                            <label class="controls-label">
+                                <span class="label-text">Delay (ms)</span>
+                                <input
+                                    class="controls-input"
+                                    id="delay"
+                                    type="number"
+                                    value="4"
+                                    min="4"
+                                    step="1"
+                                />
+                            </label>
+                        </div>
+
+                        <hr class="controls-divider" />
+
+                        <div class="controls-section">
+                            <label class="controls-label">
+                                <span class="label-text">Algorithm</span>
+                                <select
+                                    class="controls-input"
+                                    name="algoSelect"
+                                    id="algoSelect"
+                                ></select>
+                            </label>
+                            <label class="controls-label">
+                                <span class="label-text">List length</span>
+                                <input
+                                    class="controls-input"
+                                    id="listLength"
+                                    type="number"
+                                    value="200"
+                                    min="0"
+                                    step="1"
+                                />
+                            </label>
+                            <div>
+                                <button class="controls-button" id="button">Start</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

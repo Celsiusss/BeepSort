@@ -1,5 +1,5 @@
-import { List } from '../list';
+import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export interface Algorithm {
-    sort(list: List): Promise<void>;
+    sort(list: AsyncListVisualizer): Promise<void>;
 }

@@ -1,17 +1,20 @@
 import { promisify } from 'es6-promisify';
 import { AdditionalAlgorithmInformation } from './models/additional-algorithm-information';
 
-const timeout = promisify(setTimeout);
-
-export class List {
+export class AsyncListVisualizer {
     private list: number[];
 
-    public drawFn: (l: List) => void;
+    public drawFn: (l: AsyncListVisualizer) => void;
     public playAudioFn: (n: number) => void;
     public simulate = true;
     public drawEvery = 1;
+    public speedMultiplier = 1;
+
+    public paused = false;
 
     private drawCounter = 0;
+
+    private timeout: () => any;
 
     public additionalInformation: AdditionalAlgorithmInformation = {
         shuffling: false,
@@ -22,12 +25,20 @@ export class List {
 
     constructor(list: number[] = []) {
         this.list = list;
+        this.timeout = promisify(c => setTimeout(c, 4));
     }
 
     *[Symbol.iterator]() {
         for (let i = 0; i < this.length; i++) {
             yield this.get(i);
         }
+    }
+
+    public changeDelay(delay: number) {
+        if (delay < 4) {
+            throw new RangeError('delay must be >= 4');
+        }
+        this.timeout = promisify(c => setTimeout(c, delay));
     }
 
     get(n: number): number {
@@ -38,13 +49,16 @@ export class List {
         this.additionalInformation.arrayAccesses++;
         this.list[n] = e;
         if (this.simulate && this.drawFn) {
-            if (this.drawCounter < this.drawEvery) {
+            if (this.drawCounter < this.drawEvery * this.speedMultiplier) {
                 this.drawCounter++;
             } else {
                 this.drawCounter = 0;
                 this.drawFn(this);
                 this.playAudioFn(n);
-                await timeout();
+                await this.timeout();
+                if (this.paused) {
+                    await this.waitUntilNotPaused();
+                }
             }
         }
     }
@@ -70,6 +84,14 @@ export class List {
         for (let i = this.list.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             await this.swap(i, j);
+        }
+    }
+
+    async waitUntilNotPaused(): Promise<any> {
+        // TODO: remove this ugly while loop
+        const timeout = promisify(c => setTimeout(c, 100));
+        while (this.paused) {
+            await timeout();
         }
     }
 }

@@ -1,8 +1,9 @@
 import { Algorithm } from './algorithm';
-import { List } from '../list';
+import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export class MergeSort implements Algorithm {
-    async sort(list: List, min = 0, max = list.length): Promise<void> {
+    async sort(list: AsyncListVisualizer, min = 0, max = list.length): Promise<void> {
+        list.speedMultiplier = 1;
         if (max - min === 0) {
             return;
         }
@@ -12,7 +13,7 @@ export class MergeSort implements Algorithm {
         await this.merge2(list, min, max, middle);
     }
 
-    async merge2(list: List, min: number, max: number, mid: number) {
+    async merge2(list: AsyncListVisualizer, min: number, max: number, mid: number) {
         const origSpeed = list.drawEvery;
         list.drawEvery = list.drawEvery * 10;
         let i = min;
@@ -27,7 +28,7 @@ export class MergeSort implements Algorithm {
         list.drawEvery = origSpeed;
     }
 
-    private async push(list: List, start: number, end: number) {
+    private async push(list: AsyncListVisualizer, start: number, end: number) {
         for (let i = start; i < end; i++) {
             if (list.get(i) > list.get(i + 1)) {
                 list.additionalInformation.comparisons++;

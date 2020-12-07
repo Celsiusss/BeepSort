@@ -1,8 +1,9 @@
 import { Algorithm } from './algorithm';
-import { List } from '../list';
+import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export class GravitySort implements Algorithm {
-    async sort(list: List): Promise<void> {
+    async sort(list: AsyncListVisualizer): Promise<void> {
+        list.speedMultiplier = 1000;
         let abacus: number[][] = new Array(list.length)
             .fill(0)
             .map(_ => new Array(list.length).fill(0));
