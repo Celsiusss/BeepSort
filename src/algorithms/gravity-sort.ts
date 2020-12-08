@@ -25,6 +25,7 @@ export class GravitySort implements Algorithm {
                 if (abacus[dropRow][i] == 0) {
                     abacus[j][i] = 0;
                     abacus[dropRow][i] = 1;
+                    list.additionalInformation.arrayAccesses += 2;
                 }
             }
             for (let n = 0; n < abacus.length; n++) {

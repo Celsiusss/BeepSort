@@ -1,20 +1,24 @@
 import './styling/global.scss';
-import { hsl } from 'color-convert';
 import { AsyncListVisualizer } from './async-list-visualizer';
 import { AlgorithmFactory, Algorithms } from './algorithm-factory';
 import { AdditionalAlgorithmInformation } from './models/additional-algorithm-information';
 import { Audio } from './audio';
 import { Controls } from './controls';
 import { Configuration } from './configuration';
+import { Visualizer } from './visualizers/visualizer';
+import {VisualizerFactory, Visualizers, visualizers} from "./visualizer-factory";
 
 // TODO: refactor this entire file
 
-const select = <HTMLSelectElement>document.getElementById('algoSelect');
+const algoSelect = <HTMLSelectElement>document.getElementById('algoSelect');
+const visSelect = <HTMLSelectElement>document.getElementById('visualizer-input');
 const lengthInput = <HTMLInputElement>document.getElementById('listLength');
 const speedInput = <HTMLInputElement>document.getElementById('speed');
 const canvasContainer = <HTMLDivElement>document.getElementById('ccontainer');
 const canvas = <HTMLCanvasElement>document.getElementById('canvas');
 const context = canvas.getContext('2d');
+
+let visualizer: Visualizer;
 
 const configuration = new Configuration({});
 
@@ -22,7 +26,9 @@ let audio = new Audio(0);
 let list = new AsyncListVisualizer();
 
 document.getElementById('button').addEventListener('click', async event => {
-    const selected = select.options[select.selectedIndex].value;
+    const selected = algoSelect.options[algoSelect.selectedIndex].value;
+    const selectedVisualizer = visSelect.options[visSelect.selectedIndex].value as Visualizers;
+    visualizer = VisualizerFactory.visualizer(selectedVisualizer);
     const length = +lengthInput.value;
     list = new AsyncListVisualizer();
 
@@ -67,6 +73,25 @@ document.getElementById('button-pause').addEventListener('click', event => {
 document.getElementById('button-resume').addEventListener('click', event => {
     list.paused = false;
 });
+document.getElementById('button-step').addEventListener('click', event => {
+    list.step = true;
+});
+document.getElementById('tab-controls').addEventListener('click', event => {
+    switchTab('controls');
+});
+document.getElementById('tab-presentation').addEventListener('click', event => {
+    switchTab('presentation');
+});
+
+const switchTab = (tab: 'controls' | 'presentation') => {
+    if (tab === "controls") {
+        document.getElementById('config-controls').classList.remove('tab-hidden');
+        document.getElementById('config-presentation').classList.add('tab-hidden');
+    } else if (tab === "presentation") {
+        document.getElementById('config-controls').classList.add('tab-hidden')
+        document.getElementById('config-presentation').classList.remove('tab-hidden')
+    }
+}
 
 document
     .getElementsByClassName('controls-container')
@@ -74,22 +99,7 @@ document
     .addEventListener('input', Controls.inputHandler.bind(null, configuration.controls));
 
 const drawArray = (list: AsyncListVisualizer) => {
-    const hasColors = configuration.controls.colors;
-    context.fillStyle = '#000000';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    const width = canvas.width / list.length;
-    const height = canvas.height / list.length;
-    for (let i = 0; i < list.length; i++) {
-        const hue = 255 - (list.get(i) / list.length) * 255;
-        const color = hasColors ? hsl.hex([hue, 100, 50]) : 'fff';
-        context.fillStyle = '#' + color;
-        context.fillRect(
-            i * width,
-            list.length * height - Math.ceil(list.get(i) * height),
-            width,
-            Math.ceil(list.get(i) * height)
-        );
-    }
+    visualizer.draw(context, canvas.width, canvas.height, configuration.controls, list);
     printInformation(list.additionalInformation);
 };
 const printInformation = (information: AdditionalAlgorithmInformation) => {
@@ -117,12 +127,20 @@ const printInformation = (information: AdditionalAlgorithmInformation) => {
     context.fillStyle = '#000000';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    visualizer = VisualizerFactory.visualizer('stairs');
+
     for (const algorithm in Algorithms) {
         const element = document.createElement('option');
         element.setAttribute('value', algorithm);
         element.innerText = algorithm;
-        select.appendChild(element);
+        algoSelect.appendChild(element);
     }
+    visualizers.forEach(visualizer => {
+        const element = document.createElement('option');
+        element.setAttribute('value', visualizer);
+        element.innerText = visualizer;
+        visSelect.appendChild(element);
+    });
 })();
 
 window.onresize = () => {

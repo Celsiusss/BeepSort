@@ -25,6 +25,9 @@
         background-color: $lighter-background-color;
     }
 }
+.tab-hidden {
+    visibility: hidden;
+}
 
 .controls-title {
     font-size: 18px;
@@ -33,6 +36,9 @@
     background-color: $lighter-background-color;
     display: flex;
     flex-direction: column;
+}
+.controls-content {
+
 }
 .controls-divider {
     margin-top: 2px;

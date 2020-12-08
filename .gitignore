@@ -1,5 +1,7 @@
 .idea/
 *.iml
 
+.firebase/
 node_modules/
 dist/
+.firebaserc

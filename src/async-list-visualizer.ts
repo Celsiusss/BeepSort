@@ -11,6 +11,7 @@ export class AsyncListVisualizer {
     public speedMultiplier = 1;
 
     public paused = false;
+    public step = false;
 
     private drawCounter = 0;
 
@@ -91,6 +92,10 @@ export class AsyncListVisualizer {
         // TODO: remove this ugly while loop
         const timeout = promisify(c => setTimeout(c, 100));
         while (this.paused) {
+            if (this.step || this.step) {
+                this.step = false;
+                break;
+            }
             await timeout();
         }
     }
