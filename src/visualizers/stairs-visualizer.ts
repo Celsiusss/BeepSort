@@ -1,7 +1,7 @@
 import { Visualizer } from './visualizer';
-import {IControlsConfiguration} from "../configuration";
-import {AsyncListVisualizer} from "../async-list-visualizer";
-import {hsl} from "color-convert";
+import { IControlsConfiguration } from '../models';
+import { AsyncListVisualizer } from '../async-list-visualizer';
+import { hsl } from 'color-convert';
 
 export class StairsVisualizer implements Visualizer {
     draw(

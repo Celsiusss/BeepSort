@@ -1,5 +1,5 @@
 import { promisify } from 'es6-promisify';
-import { AdditionalAlgorithmInformation } from './models/additional-algorithm-information';
+import { AdditionalAlgorithmInformation } from './models';
 
 export class AsyncListVisualizer {
     private list: number[];
@@ -89,7 +89,6 @@ export class AsyncListVisualizer {
     }
 
     async waitUntilNotPaused(): Promise<any> {
-        // TODO: remove this ugly while loop
         const timeout = promisify(c => setTimeout(c, 100));
         while (this.paused) {
             if (this.step || this.step) {

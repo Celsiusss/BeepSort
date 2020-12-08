@@ -14,8 +14,6 @@ export class MergeSort implements Algorithm {
     }
 
     async merge2(list: AsyncListVisualizer, min: number, max: number, mid: number) {
-        const origSpeed = list.drawEvery;
-        list.drawEvery = list.drawEvery * 10;
         let i = min;
         while (i <= mid) {
             if (list.get(i) > list.get(mid + 1)) {
@@ -25,7 +23,6 @@ export class MergeSort implements Algorithm {
             }
             i++;
         }
-        list.drawEvery = origSpeed;
     }
 
     private async push(list: AsyncListVisualizer, start: number, end: number) {

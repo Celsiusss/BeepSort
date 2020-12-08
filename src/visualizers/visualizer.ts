@@ -1,5 +1,5 @@
 import { AsyncListVisualizer } from '../async-list-visualizer';
-import { IControlsConfiguration } from '../configuration';
+import { IControlsConfiguration } from '../models';
 
 export interface Visualizer {
     draw(
