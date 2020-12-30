@@ -40,11 +40,18 @@ export const runVisualizer = async (options: RunOptions) => {
         list.playAudioFn = () => {};
     }
 
-    list.drawFn = drawArray.bind(null, list, visualizer, canvasInfo, controls);
     list.drawEvery = controls.speed;
     list.additionalInformation.shuffling = true;
+
+    let animationId: number;
+    const drawCanvas = () => {
+        drawArray(list, visualizer, canvasInfo, controls);
+        animationId = requestAnimationFrame(drawCanvas);
+    };
+    animationId = requestAnimationFrame(drawCanvas);
+
     await list.populate(listLength, true);
-    drawArray(list, visualizer, canvasInfo, controls);
+
     list.additionalInformation = {
         ...list.additionalInformation,
         algorithmName: algorithm,
@@ -53,10 +60,11 @@ export const runVisualizer = async (options: RunOptions) => {
     };
 
     const sortingAlgorithm = AlgorithmFactory.getAlgorithm(algorithm);
-    await sortingAlgorithm.sort(list);
-    drawArray(list, visualizer, canvasInfo, controls);
-
-    sortingDone$.next();
+    sortingAlgorithm.sort(list).then(() => {
+        drawArray(list, visualizer, canvasInfo, controls);
+        sortingDone$.next();
+        cancelAnimationFrame(animationId);
+    });
 };
 
 const drawArray = (
@@ -65,8 +73,10 @@ const drawArray = (
     canvasInfo: CanvasInfo,
     controls: IControlsConfiguration
 ) => {
+    list.countAccesses = false;
     visualizer.draw(canvasInfo.context, canvasInfo.width, canvasInfo.height, controls, list);
     printInformation(list.additionalInformation, canvasInfo);
+    list.countAccesses = true;
 };
 const printInformation = (information: AdditionalAlgorithmInformation, canvasInfo: CanvasInfo) => {
     const { algorithmName, arrayAccesses, comparisons } = information;

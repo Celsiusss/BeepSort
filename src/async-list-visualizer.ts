@@ -4,7 +4,6 @@ import { AdditionalAlgorithmInformation } from './models';
 export class AsyncListVisualizer {
     private list: number[];
 
-    public drawFn: (l: AsyncListVisualizer) => void;
     public playAudioFn: (n: number) => void;
     public simulate = true;
     public drawEvery = 1;
@@ -12,6 +11,8 @@ export class AsyncListVisualizer {
 
     public paused = false;
     public step = false;
+
+    public countAccesses = true;
 
     private drawCounter = 0;
 
@@ -43,18 +44,19 @@ export class AsyncListVisualizer {
     }
 
     get(n: number): number {
-        this.additionalInformation.arrayAccesses++;
+        if (this.countAccesses) {
+            this.additionalInformation.arrayAccesses++;
+        }
         return this.list[n];
     }
     async set(n: number, e: number): Promise<void> {
         this.additionalInformation.arrayAccesses++;
         this.list[n] = e;
-        if (this.simulate && this.drawFn) {
+        if (this.simulate) {
             if (this.drawCounter < this.drawEvery * this.speedMultiplier) {
                 this.drawCounter++;
             } else {
                 this.drawCounter = 0;
-                this.drawFn(this);
                 this.playAudioFn(n);
                 await this.timeout();
                 if (this.paused) {
@@ -91,7 +93,7 @@ export class AsyncListVisualizer {
     async waitUntilNotPaused(): Promise<any> {
         const timeout = promisify(c => setTimeout(c, 100));
         while (this.paused) {
-            if (this.step || this.step) {
+            if (this.step) {
                 this.step = false;
                 break;
             }
