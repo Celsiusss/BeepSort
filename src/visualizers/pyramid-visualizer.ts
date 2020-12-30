@@ -20,8 +20,7 @@ export class PyramidVisualizer implements Visualizer {
         for (let i = 0; i < list.length; i++) {
             const eWidth = list.get(i) / 2;
             const hue = 255 - (list.get(i) / list.length) * 360;
-            const color = hasColors ? hsl.hex([hue, 100, 50]) : 'fff';
-            context.fillStyle = '#' + color;
+            context.fillStyle = hasColors ? `hsl(${hue},100%,50%)` : '#fff';
             context.fillRect(
                 middle - eWidth * width,
                 height * i,

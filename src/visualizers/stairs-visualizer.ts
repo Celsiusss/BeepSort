@@ -18,8 +18,7 @@ export class StairsVisualizer implements Visualizer {
         const height = cHeight / list.length;
         for (let i = 0; i < list.length; i++) {
             const hue = 255 - (list.get(i) / list.length) * 360;
-            const color = hasColors ? hsl.hex([hue, 100, 50]) : 'fff';
-            context.fillStyle = '#' + color;
+            context.fillStyle = hasColors ? `hsl(${hue},100%,50%)` : '#fff';
             context.fillRect(
                 i * width,
                 list.length * height - Math.ceil(list.get(i) * height),

@@ -20,7 +20,7 @@ export class CircleVisualizer implements Visualizer {
         let prevAngle = 0;
         for (let i = 0; i < list.length; i++) {
             const hue = 255 - (list.get(i) / list.length) * 360;
-            const color = '#' + (hasColors ? hsl.hex([hue, 100, 50]) : 'fff');
+            const color = hasColors ? `hsl(${hue},100%,50%)` : '#fff';
             const angle = prevAngle + (1 / list.length) * Math.PI * 2;
             context.fillStyle = color;
             context.strokeStyle = color;
