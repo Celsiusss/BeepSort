@@ -41,6 +41,7 @@ export class MergeSort implements Algorithm {
     async merge(left: number[], right: number[], startIndex: number): Promise<number[]> {
         const result: number[] = [];
         while (left.length > 0 && right.length > 0) {
+            this.displayList.additionalInformation.comparisons++;
             if (left[0] <=  right[0]) {
                 result.push(left[0]);
                 left = left.slice(1);
