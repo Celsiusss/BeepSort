@@ -57,7 +57,7 @@ export class AsyncListVisualizer {
                 this.drawCounter++;
             } else {
                 this.drawCounter = 0;
-                this.playAudioFn(n);
+                this.playAudioFn(e);
                 await this.timeout();
                 if (this.paused) {
                     await this.waitUntilNotPaused();
