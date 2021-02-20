@@ -2,35 +2,69 @@ import { Algorithm } from './algorithm';
 import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export class MergeSort implements Algorithm {
-    async sort(list: AsyncListVisualizer, min = 0, max = list.length): Promise<void> {
-        list.speedMultiplier = 1;
-        if (max - min === 0) {
-            return;
+
+    private displayList: AsyncListVisualizer;
+
+    async sort(displayList: AsyncListVisualizer): Promise<void> {
+        this.displayList = displayList;
+
+        const list: number[] = [];
+        for (let item of displayList) {
+            list.push(item);
         }
-        const middle = Math.floor((min + max) / 2);
-        await this.sort(list, min, middle);
-        await this.sort(list, middle + 1, max);
-        await this.merge2(list, min, max, middle);
+
+        await this.mergeSort(list);
+        return;
+
     }
 
-    async merge2(list: AsyncListVisualizer, min: number, max: number, mid: number) {
-        let i = min;
-        while (i <= mid) {
-            if (list.get(i) > list.get(mid + 1)) {
-                list.additionalInformation.comparisons++;
-                await list.swap(i, mid + 1);
-                await this.push(list, mid + 1, max);
-            }
-            i++;
+    async mergeSort(list: number[], startIndex = 0): Promise<number[]> {
+        if (list.length <= 1) {
+            return list;
         }
+
+        let left: number[] = [];
+        let right: number[] = [];
+        for (let i = 0; i < list.length; i++) {
+            if (i < list.length / 2) {
+                left.push(list[i]);
+            } else {
+                right.push(list[i]);
+            }
+        }
+        right = await this.mergeSort(right, startIndex + left.length);
+        left = await this.mergeSort(left, startIndex);
+
+        return this.merge(left, right, startIndex);
     }
 
-    private async push(list: AsyncListVisualizer, start: number, end: number) {
-        for (let i = start; i < end; i++) {
-            if (list.get(i) > list.get(i + 1)) {
-                list.additionalInformation.comparisons++;
-                await list.swap(i, i + 1);
+    async merge(left: number[], right: number[], startIndex: number): Promise<number[]> {
+        const result: number[] = [];
+        while (left.length > 0 && right.length > 0) {
+            if (left[0] <=  right[0]) {
+                result.push(left[0]);
+                left = left.slice(1);
+            } else {
+                result.push(right[0]);
+                right = right.slice(1);
             }
+        }
+
+        while (left.length > 0) {
+            result.push(left[0]);
+            left = left.slice(1);
+        }
+        while (right.length > 0) {
+            result.push(right[0]);
+            right = right.slice(1);
+        }
+        await this.updateDisplayList(startIndex, result);
+        return result;
+    }
+
+    async updateDisplayList(from: number, list: number[]): Promise<void> {
+        for (let i = 0; i < list.length; i++) {
+            await this.displayList.set(from + i, list[i]);
         }
     }
 }
