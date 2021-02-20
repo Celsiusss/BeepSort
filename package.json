@@ -6,7 +6,7 @@
     "scripts": {
         "start": "webpack serve --config webpack.dev.js",
         "build": "webpack --config webpack.prod.js",
-        "analyze": "webpack serve --config webpack.prod.js"
+        "analyze": "webpack serve --config webpack.analyze.js"
     },
     "keywords": [],
     "author": "",
