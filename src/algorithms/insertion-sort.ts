@@ -3,7 +3,7 @@ import { AsyncListVisualizer } from '../async-list-visualizer';
 
 export class InsertionSort implements Algorithm {
     async sort(list: AsyncListVisualizer): Promise<void> {
-        list.speedMultiplier = 10;
+        // list.speedMultiplier = 10;
         let i = 1;
         while (i < list.length) {
             let j = i;
@@ -15,5 +15,4 @@ export class InsertionSort implements Algorithm {
             i++;
         }
     }
-
 }

@@ -3,6 +3,8 @@ import { Quicksort } from './algorithms/quicksort';
 import { MergeSort } from './algorithms/merge-sort';
 import { InsertionSort } from './algorithms/insertion-sort';
 import { GravitySort } from './algorithms/gravity-sort';
+import { RadixSort } from './algorithms/radix-sort';
+import { CountingSort } from './algorithms/counting-sort';
 
 export class AlgorithmFactory {
     public static getAlgorithm(alg: Algorithms): Algorithm {
@@ -15,6 +17,10 @@ export class AlgorithmFactory {
                 return new InsertionSort();
             case Algorithms.GravitySort:
                 return new GravitySort();
+            case Algorithms.RadixSort:
+                return new RadixSort();
+            case Algorithms.CountingSort:
+                return new CountingSort();
         }
     }
 }
@@ -23,5 +29,7 @@ export enum Algorithms {
     QuickSort = 'QuickSort',
     MergeSort = 'MergeSort',
     InsertionSort = 'InsertionSort',
-    GravitySort = 'GravitySort'
+    GravitySort = 'GravitySort',
+    RadixSort = 'RadixSort',
+    CountingSort = 'CountingSort'
 }
