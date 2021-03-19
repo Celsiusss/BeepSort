@@ -16,7 +16,8 @@ export class AsyncListVisualizer {
 
     private drawCounter = 0;
 
-    private timeout: () => any;
+    private delay = 4;
+    private timeout = promisify(c => setTimeout(c, this.delay));
 
     public additionalInformation: AdditionalAlgorithmInformation = {
         shuffling: false,
@@ -27,7 +28,6 @@ export class AsyncListVisualizer {
 
     constructor(list: number[] = []) {
         this.list = list;
-        this.timeout = promisify(c => setTimeout(c, 4));
     }
 
     *[Symbol.iterator]() {
@@ -37,10 +37,10 @@ export class AsyncListVisualizer {
     }
 
     public changeDelay(delay: number) {
-        if (delay < 4) {
+        if (delay < 4 && delay !== -1) {
             throw new RangeError('delay must be >= 4');
         }
-        this.timeout = promisify(c => setTimeout(c, delay));
+        this.delay = delay;
     }
 
     get(n: number): number {
@@ -99,5 +99,9 @@ export class AsyncListVisualizer {
             }
             await timeout();
         }
+    }
+
+    findHighestNum(): number {
+        return this.list.reduce((prev, curr) => (curr > prev ? curr : prev), 0);
     }
 }

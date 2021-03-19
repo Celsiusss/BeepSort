@@ -30,4 +30,5 @@ export interface IControlsConfiguration {
     algorithm: Algorithms;
     visualizer: Visualizer;
     listLength: number;
+    animateShuffle: boolean;
 }

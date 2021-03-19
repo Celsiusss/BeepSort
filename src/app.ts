@@ -4,7 +4,7 @@ import { visualizers } from './visualizer-factory';
 import { AsyncListVisualizer } from './async-list-visualizer';
 import { RunOptions } from './models';
 import { Configuration } from './configuration';
-import { registerEventHandlers } from './event-handlers';
+import { registerDomEvents } from './event-handlers';
 
 const algoSelect = <HTMLSelectElement>document.getElementById('algoSelect');
 const visSelect = <HTMLSelectElement>document.getElementById('visualizer-input');
@@ -44,7 +44,7 @@ const fillSelects = () => {
         },
         configuration
     };
-    registerEventHandlers(configuration, runOptions);
+    registerDomEvents(configuration, runOptions);
 
     context.imageSmoothingEnabled = false;
     context.fillStyle = '#000000';

@@ -50,7 +50,9 @@ export const runVisualizer = async (options: RunOptions) => {
     };
     animationId = requestAnimationFrame(drawCanvas);
 
+    list.simulate = controls.animateShuffle;
     await list.populate(listLength, true);
+    list.simulate = true;
 
     list.additionalInformation = {
         ...list.additionalInformation,
@@ -60,11 +62,11 @@ export const runVisualizer = async (options: RunOptions) => {
     };
 
     const sortingAlgorithm = AlgorithmFactory.getAlgorithm(algorithm);
-    sortingAlgorithm.sort(list).then(() => {
-        drawArray(list, visualizer, canvasInfo, controls);
-        sortingDone$.next();
-        cancelAnimationFrame(animationId);
-    });
+    await sortingAlgorithm.sort(list);
+    drawArray(list, visualizer, canvasInfo, controls);
+    sortingDone$.next();
+    sortingDone$.complete();
+    cancelAnimationFrame(animationId);
 };
 
 const drawArray = (

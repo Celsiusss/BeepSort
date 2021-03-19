@@ -8,9 +8,9 @@
             <div class="toolbar">
                 <h1 class="main-title">Beep Sort</h1>
                 <div class="toolbar-buttons">
-                    <button id="button-resume">Resume</button>
-                    <button id="button-pause">Pause</button>
-                    <button id="button-step">Step</button>
+                    <button id="button-resume" class="controls-button">Resume</button>
+                    <button id="button-pause" class="controls-button">Pause</button>
+                    <button id="button-step" class="controls-button">Step</button>
                 </div>
             </div>
             <div id="visualizer">
@@ -32,11 +32,11 @@
                                 <label class="controls-label">
                                     <span class="label-text">Audio</span>
                                     <input
-                                            class="controls-input"
-                                            id="audio"
-                                            type="checkbox"
-                                            value="1"
-                                            checked
+                                        class="controls-input"
+                                        id="audio"
+                                        type="checkbox"
+                                        value="1"
+                                        checked
                                     />
                                 </label>
                             </div>
@@ -46,11 +46,25 @@
                             <div class="controls-section">
                                 <label class="controls-label">
                                     <span class="label-text">Colors</span>
-                                    <input class="controls-input" id="color" type="checkbox" checked />
+                                    <input
+                                        class="controls-input"
+                                        id="color"
+                                        type="checkbox"
+                                        checked
+                                    />
                                 </label>
                                 <label class="controls-label">
                                     <span class="label-text">Visualizer</span>
                                     <select class="controls-input" id="visualizer-input"></select>
+                                </label>
+                                <label class="controls-label">
+                                    <span class="label-text">Animate shuffle</span>
+                                    <input
+                                        class="controls-input"
+                                        id="anim-shuffle"
+                                        type="checkbox"
+                                        checked
+                                    />
                                 </label>
                             </div>
 
@@ -60,23 +74,23 @@
                                 <label class="controls-label">
                                     <span class="label-text">Speed</span>
                                     <input
-                                            class="controls-input"
-                                            id="speed"
-                                            type="number"
-                                            value="1"
-                                            min="1"
-                                            step="1"
+                                        class="controls-input"
+                                        id="speed"
+                                        type="number"
+                                        value="1"
+                                        min="1"
+                                        step="1"
                                     />
                                 </label>
                                 <label class="controls-label">
                                     <span class="label-text">Delay (ms)</span>
                                     <input
-                                            class="controls-input"
-                                            id="delay"
-                                            type="number"
-                                            value="4"
-                                            min="4"
-                                            step="1"
+                                        class="controls-input"
+                                        id="delay"
+                                        type="number"
+                                        value="4"
+                                        min="4"
+                                        step="1"
                                     />
                                 </label>
                             </div>
@@ -87,24 +101,24 @@
                                 <label class="controls-label">
                                     <span class="label-text">Algorithm</span>
                                     <select
-                                            class="controls-input"
-                                            name="algoSelect"
-                                            id="algoSelect"
+                                        class="controls-input"
+                                        name="algoSelect"
+                                        id="algoSelect"
                                     ></select>
                                 </label>
                                 <label class="controls-label">
                                     <span class="label-text">List length</span>
                                     <input
-                                            class="controls-input"
-                                            id="listLength"
-                                            type="number"
-                                            value="200"
-                                            min="0"
-                                            step="1"
+                                        class="controls-input"
+                                        id="listLength"
+                                        type="number"
+                                        value="200"
+                                        min="0"
+                                        step="1"
                                     />
                                 </label>
                                 <div>
-                                    <button class="controls-button" id="button">Start</button>
+                                    <button class="controls-button" id="button-start">Start</button>
                                 </div>
                             </div>
                         </div>
