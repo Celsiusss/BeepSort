@@ -72,6 +72,9 @@ export const handleInput = (event: InputEvent, controls: IControlsConfiguration)
         case 'anim-shuffle':
             controls.animateShuffle = target.checked;
             break;
+        case 'show-fps':
+            controls.showFps = target.checked;
+            break;
         default:
             break;
     }

@@ -43,10 +43,17 @@ export const runVisualizer = async (options: RunOptions) => {
     list.drawEvery = controls.speed;
     list.additionalInformation.shuffling = true;
 
+    const frames: number[] = [];
     let animationId: number;
     const drawCanvas = () => {
         drawArray(list, visualizer, canvasInfo, controls);
         animationId = requestAnimationFrame(drawCanvas);
+        const fps = frames.length / ((Date.now() - frames[0]) / 1000);
+        frames.push(Date.now());
+        if (frames.length > 20) {
+            frames.shift();
+        }
+        list.additionalInformation.fps = Math.floor(fps);
     };
     animationId = requestAnimationFrame(drawCanvas);
 
@@ -77,10 +84,14 @@ const drawArray = (
 ) => {
     list.countAccesses = false;
     visualizer.draw(canvasInfo.context, canvasInfo.width, canvasInfo.height, controls, list);
-    printInformation(list.additionalInformation, canvasInfo);
+    printInformation(list.additionalInformation, canvasInfo, controls);
     list.countAccesses = true;
 };
-const printInformation = (information: AdditionalAlgorithmInformation, canvasInfo: CanvasInfo) => {
+const printInformation = (
+    information: AdditionalAlgorithmInformation,
+    canvasInfo: CanvasInfo,
+    controls: IControlsConfiguration
+) => {
     const { algorithmName, arrayAccesses, comparisons } = information;
     const context = canvasInfo.context;
     const fontSize = 24;
@@ -97,4 +108,7 @@ const printInformation = (information: AdditionalAlgorithmInformation, canvasInf
         fontSize * 2
     );
     context.fillText('Comparisons: ' + Intl.NumberFormat().format(comparisons), 0, fontSize * 3);
+    if (controls.showFps) {
+        context.fillText('FPS: ' + information.fps, 0, fontSize * 4);
+    }
 };

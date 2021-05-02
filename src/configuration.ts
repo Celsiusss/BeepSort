@@ -13,14 +13,19 @@ export class Configuration {
     constructor(controls: Partial<IControlsConfiguration> = {}) {
         this.controls = {
             ...controls,
-            speed: 1,
-            waitDelay: 4,
-            colors: true,
-            audio: true,
-            listLength: 200,
+            speed: +(document.getElementById('speed') as HTMLInputElement).value,
+            waitDelay: +(document.getElementById('delay') as HTMLInputElement).value,
+            colors: (document.getElementById('color') as HTMLInputElement).checked,
+            audio: (document.getElementById('audio') as HTMLInputElement).checked,
+            listLength: +(document.getElementById('listLength') as HTMLInputElement).value,
             algorithm: Algorithms.QuickSort,
             visualizer: VisualizerFactory.visualizer('stairs'),
-            animateShuffle: true
+            animateShuffle: (document.getElementById('anim-shuffle') as HTMLInputElement).checked,
+            showFps: (document.getElementById('show-fps') as HTMLInputElement).checked,
+            showComparisons: (document.getElementById('show-comparisons') as HTMLInputElement)
+                .checked,
+            showAccesses: (document.getElementById('show-accesses') as HTMLInputElement).checked,
+            showAlgoName: (document.getElementById('show-algo') as HTMLInputElement).checked
         };
         this.subject = new BehaviorSubject<IControlsConfiguration>(this.controls);
         this.observable = this.subject.asObservable();

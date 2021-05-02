@@ -23,7 +23,8 @@ export class AsyncListVisualizer {
         shuffling: false,
         algorithmName: '',
         arrayAccesses: 0,
-        comparisons: 0
+        comparisons: 0,
+        fps: 0
     };
 
     constructor(list: number[] = []) {

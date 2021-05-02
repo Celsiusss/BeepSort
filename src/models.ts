@@ -8,6 +8,7 @@ export interface AdditionalAlgorithmInformation {
     algorithmName: string;
     arrayAccesses: number;
     comparisons: number;
+    fps: number;
 }
 
 export interface RunOptions {
@@ -31,4 +32,8 @@ export interface IControlsConfiguration {
     visualizer: Visualizer;
     listLength: number;
     animateShuffle: boolean;
+    showFps: boolean;
+    showComparisons: boolean;
+    showAccesses: boolean;
+    showAlgoName: boolean;
 }
