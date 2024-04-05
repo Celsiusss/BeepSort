@@ -85,10 +85,18 @@ export class AsyncListVisualizer {
     }
 
     async swap(x: number, y: number) {
-        const tmp = this.get(x);
-        await this.set(x, this.get(y), true);
-        this.changeHistory.push([x, this.get(y)]);
-        await this.set(y, tmp);
+        if (this.simulate) {
+            const tmp = this.get(x);
+            await this.set(x, this.get(y), true);
+            if (this.recordChanges) {
+                this.changeHistory.push([x, this.get(y)]);
+            }
+            await this.set(y, tmp);
+        } else {
+            const tmp = this.get(x);
+            this.set(x, this.get(y), true);
+            this.set(y, tmp);
+        }
     }
 
     get length(): number {
@@ -105,7 +113,13 @@ export class AsyncListVisualizer {
     async shuffle() {
         for (let i = this.list.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            await this.swap(i, j);
+            if (this.simulate) {
+                await this.swap(i, j);
+            } else {
+                const tmp = this.list[i];
+                this.list[i] = this.list[j];
+                this.list[j] = tmp;
+            }
         }
     }
 

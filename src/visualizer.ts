@@ -44,7 +44,6 @@ export const runVisualizer = async (options: RunOptions) => {
                 list.drawEvery = controls.speed;
                 list.playAudioFn = controls.audio ? audio.update.bind(audio) : () => {};
                 list.changeDelay(controls.waitDelay);
-                console.log(controls.speed);
             }),
             takeUntil(sortingDone$)
         )

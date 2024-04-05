@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat2, mat4 } from 'gl-matrix';
 import { AsyncListVisualizer } from '../async-list-visualizer';
 import { IControlsConfiguration } from '../models';
 import { WebGLVisualizer } from './visualizer';
@@ -17,12 +17,22 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
     private columnsPosition: WebGLUniformLocation;
     private texWidthPosition: WebGLUniformLocation;
     private sampleSizePosition: WebGLUniformLocation;
+    private screenWidthPosition: WebGLUniformLocation;
+    private screenHeightPosition: WebGLUniformLocation;
 
     private projectionMatrix: mat4;
 
     init(gl: WebGL2RenderingContext, list: AsyncListVisualizer): void {
         this.columns = list.length;
         this.maxTexWidth = Math.ceil(Math.sqrt(this.columns));
+
+        const maxGlTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+
+        if (this.maxTexWidth > maxGlTexSize) {
+            alert("List length too large, max " + maxGlTexSize ** 2);
+            throw new Error("Too large texture size");
+        }
+
         gl.getExtension('OES_texture_float_linear');
 
         const vShader = loadShader(gl, gl.VERTEX_SHADER, vShaderSrc);
@@ -62,6 +72,8 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         this.columnsPosition = gl.getUniformLocation(shaderProgram, 'columns');
         this.texWidthPosition = gl.getUniformLocation(shaderProgram, 'texWidth');
         this.sampleSizePosition = gl.getUniformLocation(shaderProgram, 'sampleSize');
+        this.screenWidthPosition = gl.getUniformLocation(shaderProgram, 'screenWidth');
+        this.screenHeightPosition = gl.getUniformLocation(shaderProgram, 'screenHeight');
 
         // texture
         const texture = gl.createTexture();
@@ -108,7 +120,8 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         gl.uniform1f(this.texWidthPosition, this.texWidth);
         const sampleSize = Math.min(Math.ceil(this.columns / width), controls.maxSampleSize == 0 ? Infinity : controls.maxSampleSize);
         gl.uniform1i(this.sampleSizePosition, sampleSize);
-        console.log(sampleSize);
+        gl.uniform1f(this.screenWidthPosition, width);
+        gl.uniform1f(this.screenHeightPosition, height);
 
         for (const [i, e] of changes) {
             this.tex.set([e / this.columns], i);
@@ -194,6 +207,9 @@ const fShaderSrc = `#version 300 es
   uniform float columns;
   uniform float texWidth;
   uniform int sampleSize;
+
+  uniform float screenWidth;
+  uniform float screenHeight;
   
   out vec4 color;
   
@@ -201,29 +217,88 @@ const fShaderSrc = `#version 300 es
       vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
       return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
   }
+  vec3 colorize(in float uvy, in float height, in float dotHeight) {
+    return hsl2rgb(vec3(-height - 0.29, 1.0, 0.5));
+  }
   
   void main() {
     color = vec4(0.0, 0.0, 0.0, 0.0);
     int adds = 0;
-    for (int i = 0; i < sampleSize; i++) {
-      float p = uv.x * columns + float(i);
-      float u = mod(p, texWidth);
-      float v = floor(p / texWidth);
-    
-      vec4 val = texelFetch(sampler, ivec2(u,v), 0);
-      float h = val.y;
-      float height = val.x;
-    
-      if (uv.y < height) {
-        color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
-        // color += vec4(1.0) / float(sampleSize);
-        adds += 1;
-      } else {
-        color += vec4(color.rgb, 1.0) / float(sampleSize);
-      }
+    float columnWidth = screenWidth / columns;
+    float dotSize = 0.001;
+    float dotWidth = (screenWidth * dotSize) / columnWidth;
+    float dotHeight = dotSize;
+    float dotDiff = dotWidth - 1.0;
+    float p = uv.x * columns;
+    float u = mod(p, texWidth);
+    float v = floor(p / texWidth);
+
+    float sp = p - floor(p);
+
+    vec4 val = texelFetch(sampler, ivec2(u,v), 0);
+    float h = val.y;
+    float height = val.x;
+
+    if (uv.y < height && uv.y > height - dotHeight && sp < dotWidth ) {
+        color = vec4(colorize(uv.y, height, dotHeight), 1.0);
+    } else {
+        color = vec4(color.rgb, 1.0);
+        if (dotDiff >= 0.0) {
+            float normalizedDotDiff = dotDiff * columnWidth / screenWidth;
+            for (float j = 0.0; j <= normalizedDotDiff; j += 1.0 / columns) {
+                p = (uv.x - normalizedDotDiff + j) * columns;
+                u = mod(p, texWidth);
+                v = floor(p / texWidth);
+                float height = texelFetch(sampler, ivec2(u,v), 0).x;
+                if (uv.y < height && uv.y > height - dotHeight) {
+                    color = vec4(colorize(uv.y, height, dotHeight), 1.0);
+                }
+            }
+        }
+
     //   color = texture(sampler, uv);
     }
     float rem = color.a;
     // color.rgb *= 1.0 / rem;
   }
   `;
+//   const fShaderSrc = `#version 300 es
+//   precision highp float;
+//   in vec2 uv;
+//   uniform sampler2D sampler;
+//   uniform float columns;
+//   uniform float texWidth;
+//   uniform int sampleSize;
+  
+//   out vec4 color;
+  
+//   vec3 hsl2rgb( in vec3 c ) {
+//       vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
+//       return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
+//   }
+  
+//   void main() {
+//     color = vec4(0.0, 0.0, 0.0, 0.0);
+//     int adds = 0;
+//     for (int i = 0; i < sampleSize; i++) {
+//       float p = uv.x * columns + float(i);
+//       float u = mod(p, texWidth);
+//       float v = floor(p / texWidth);
+    
+//       vec4 val = texelFetch(sampler, ivec2(u,v), 0);
+//       float h = val.y;
+//       float height = val.x;
+    
+//       if (uv.y < height) {
+//         color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
+//         // color += vec4(1.0) / float(sampleSize);
+//         adds += 1;
+//       } else {
+//         color += vec4(color.rgb, 1.0) / float(sampleSize);
+//       }
+//     //   color = texture(sampler, uv);
+//     }
+//     float rem = color.a;
+//     // color.rgb *= 1.0 / rem;
+//   }
+//   `;
