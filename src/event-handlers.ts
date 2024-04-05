@@ -35,7 +35,11 @@ const onTabPresentation = () => {
     switchTab('presentation');
 };
 
-export const handleInput = (event: InputEvent, controls: IControlsConfiguration) => {
+export const handleInput = (
+    event: InputEvent,
+    runOptions: RunOptions,
+    controls: IControlsConfiguration
+) => {
     const target = event.target;
     if (isSelectElement(target)) {
         selectHandler(target);
@@ -85,6 +89,8 @@ export const handleInput = (event: InputEvent, controls: IControlsConfiguration)
                 controls.visualizer = VisualizerFactory.visualizer(
                     target.options[target.selectedIndex].value as Visualizers
                 );
+                runOptions.isWebGl = controls.visualizer.type === 'webgl';
+
                 break;
             case 'algoSelect':
                 // @ts-ignore
@@ -114,7 +120,10 @@ export const registerDomEvents = (configuration: Configuration, runOptions: RunO
     document
         .getElementsByClassName('controls-container')
         .item(0)
-        .addEventListener('input', configuration.inputHandler.bind(configuration));
+        .addEventListener('input', event => {
+            handleInput(event as InputEvent, runOptions, configuration.controls);
+            configuration.inputHandler.bind(configuration);
+        });
 
     window.addEventListener('resize', _ => {
         console.log('resize');

@@ -4,6 +4,7 @@ import { AsyncListVisualizer } from '../async-list-visualizer';
 import { hsl } from 'color-convert';
 
 export class PyramidVisualizer implements Visualizer {
+    type = 'normal' as const;
     draw(
         context: CanvasRenderingContext2D,
         cWidth: number,

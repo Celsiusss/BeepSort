@@ -4,6 +4,9 @@ import { AdditionalAlgorithmInformation } from './models';
 export class AsyncListVisualizer {
     private list: number[];
 
+    public changeHistory: [number, number][] = [];
+    public recordChanges = false;
+
     public playAudioFn: (n: number) => void;
     public simulate = true;
     public drawEvery = 1;
@@ -54,6 +57,9 @@ export class AsyncListVisualizer {
         this.additionalInformation.arrayAccesses++;
         this.list[n] = e;
         if (this.simulate) {
+            if (this.recordChanges) {
+                this.changeHistory.push([n, e]);
+            }
             if (this.drawCounter < this.drawEvery * this.speedMultiplier) {
                 this.drawCounter++;
             } else {

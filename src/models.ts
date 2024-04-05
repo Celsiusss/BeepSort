@@ -1,4 +1,4 @@
-import { Visualizer } from './visualizers/visualizer';
+import { Visualizer, WebGLVisualizer } from './visualizers/visualizer';
 import { Algorithms } from './algorithm-factory';
 import { AsyncListVisualizer } from './async-list-visualizer';
 import { Configuration } from './configuration';
@@ -15,10 +15,11 @@ export interface RunOptions {
     list: AsyncListVisualizer;
     configuration: Configuration;
     canvasInfo: CanvasInfo;
+    isWebGl: boolean;
 }
 
 export interface CanvasInfo {
-    context: CanvasRenderingContext2D;
+    canvas: HTMLCanvasElement;
     height: number;
     width: number;
 }
@@ -29,7 +30,7 @@ export interface IControlsConfiguration {
     audio: boolean;
     colors: boolean;
     algorithm: Algorithms;
-    visualizer: Visualizer;
+    visualizer: Visualizer | WebGLVisualizer;
     listLength: number;
     animateShuffle: boolean;
     showFps: boolean;

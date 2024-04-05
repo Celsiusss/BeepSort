@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 import { Audio } from './audio';
 import { AlgorithmFactory } from './algorithm-factory';
-import { Visualizer } from './visualizers/visualizer';
+import { Visualizer, WebGLVisualizer, isWebGLVisualizer } from './visualizers/visualizer';
 import {
     AdditionalAlgorithmInformation,
     CanvasInfo,
@@ -12,7 +12,13 @@ import {
 } from './models';
 
 export const runVisualizer = async (options: RunOptions) => {
-    const { list, configuration, canvasInfo } = options;
+    const {
+        list,
+        configuration,
+        canvasInfo: { canvas },
+        canvasInfo,
+        isWebGl
+    } = options;
     const controls = configuration.controls;
     const visualizer = controls.visualizer;
 
@@ -40,13 +46,40 @@ export const runVisualizer = async (options: RunOptions) => {
         list.playAudioFn = () => {};
     }
 
+    list.simulate = controls.animateShuffle;
+    await list.populate(listLength, true);
+    list.simulate = true;
+
+    const contextIsWebGl = (
+        context: CanvasRenderingContext2D | WebGL2RenderingContext
+    ): context is WebGL2RenderingContext => {
+        return isWebGl;
+    };
+    const context = isWebGl ? canvas.getContext('webgl2') : canvas.getContext('2d');
+
+    if (isWebGLVisualizer(visualizer) && contextIsWebGl(context)) {
+        list.recordChanges = true;
+        visualizer.init(context, list);
+    }
+
+    if (!contextIsWebGl(context)) {
+        context.imageSmoothingEnabled = false;
+        context.fillStyle = '#000000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     list.drawEvery = controls.speed;
     list.additionalInformation.shuffling = true;
 
     const frames: number[] = [];
     let animationId: number;
     const drawCanvas = () => {
-        drawArray(list, visualizer, canvasInfo, controls);
+        if (!contextIsWebGl(context) && !isWebGLVisualizer(visualizer)) {
+            drawArray(list, context, visualizer, canvasInfo, controls);
+        }
+        if (contextIsWebGl(context) && isWebGLVisualizer(visualizer)) {
+            drawWebGl(list, context, visualizer, canvasInfo, controls);
+        }
         animationId = requestAnimationFrame(drawCanvas);
         const fps = frames.length / ((Date.now() - frames[0]) / 1000);
         frames.push(Date.now());
@@ -58,7 +91,7 @@ export const runVisualizer = async (options: RunOptions) => {
     animationId = requestAnimationFrame(drawCanvas);
 
     list.simulate = controls.animateShuffle;
-    await list.populate(listLength, true);
+    // await list.populate(listLength, true);
     list.simulate = true;
 
     list.additionalInformation = {
@@ -70,30 +103,39 @@ export const runVisualizer = async (options: RunOptions) => {
 
     const sortingAlgorithm = AlgorithmFactory.getAlgorithm(algorithm);
     await sortingAlgorithm.sort(list);
-    drawArray(list, visualizer, canvasInfo, controls);
     sortingDone$.next();
     sortingDone$.complete();
     cancelAnimationFrame(animationId);
 };
+const drawWebGl = (
+    list: AsyncListVisualizer,
+    gl: WebGL2RenderingContext,
+    visualizer: WebGLVisualizer,
+    canvasInfo: CanvasInfo,
+    controls: IControlsConfiguration
+) => {
+    visualizer.draw(gl, canvasInfo.width, canvasInfo.height, controls, list.changeHistory);
+    list.changeHistory = [];
+};
 
 const drawArray = (
     list: AsyncListVisualizer,
+    context: CanvasRenderingContext2D,
     visualizer: Visualizer,
     canvasInfo: CanvasInfo,
     controls: IControlsConfiguration
 ) => {
     list.countAccesses = false;
-    visualizer.draw(canvasInfo.context, canvasInfo.width, canvasInfo.height, controls, list);
-    printInformation(list.additionalInformation, canvasInfo, controls);
+    visualizer.draw(context, canvasInfo.width, canvasInfo.height, controls, list);
+    printInformation(list.additionalInformation, context, controls);
     list.countAccesses = true;
 };
 const printInformation = (
     information: AdditionalAlgorithmInformation,
-    canvasInfo: CanvasInfo,
+    context: CanvasRenderingContext2D,
     controls: IControlsConfiguration
 ) => {
     const { algorithmName, arrayAccesses, comparisons } = information;
-    const context = canvasInfo.context;
     const fontSize = 24;
     context.font = fontSize + 'px serif';
     context.fillStyle = '#fff';

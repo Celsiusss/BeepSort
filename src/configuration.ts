@@ -31,8 +31,7 @@ export class Configuration {
         this.observable = this.subject.asObservable();
     }
 
-    public inputHandler(event: InputEvent) {
-        handleInput(event, this.controls);
+    public inputHandler() {
         this.subject.next(this.controls);
     }
 }

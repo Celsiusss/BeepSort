@@ -10,7 +10,7 @@ const algoSelect = <HTMLSelectElement>document.getElementById('algoSelect');
 const visSelect = <HTMLSelectElement>document.getElementById('visualizer-input');
 const canvasContainer = <HTMLDivElement>document.getElementById('ccontainer');
 const canvas = <HTMLCanvasElement>document.getElementById('canvas');
-const context = canvas.getContext('2d');
+// const context = canvas.getContext('2d');
 
 const fillSelects = () => {
     for (const algorithm in Algorithms) {
@@ -38,15 +38,12 @@ const fillSelects = () => {
     const runOptions: RunOptions = {
         list,
         canvasInfo: {
-            context: context,
+            canvas,
             height: canvas.height,
             width: canvas.width
         },
-        configuration
+        configuration,
+        isWebGl: false
     };
     registerDomEvents(configuration, runOptions);
-
-    context.imageSmoothingEnabled = false;
-    context.fillStyle = '#000000';
-    context.fillRect(0, 0, canvas.width, canvas.height);
 })();
