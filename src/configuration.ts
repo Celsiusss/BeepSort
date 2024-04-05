@@ -25,7 +25,8 @@ export class Configuration {
             showComparisons: (document.getElementById('show-comparisons') as HTMLInputElement)
                 .checked,
             showAccesses: (document.getElementById('show-accesses') as HTMLInputElement).checked,
-            showAlgoName: (document.getElementById('show-algo') as HTMLInputElement).checked
+            showAlgoName: (document.getElementById('show-algo') as HTMLInputElement).checked,
+            maxSampleSize: +(document.getElementById('maxSampleSize') as HTMLInputElement).value
         };
         this.subject = new BehaviorSubject<IControlsConfiguration>(this.controls);
         this.observable = this.subject.asObservable();

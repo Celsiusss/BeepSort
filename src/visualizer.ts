@@ -95,6 +95,7 @@ export const runVisualizer = async (options: RunOptions) => {
         printInformation(list.additionalInformation, overlayContext, controls);
         const frameEnd = Date.now();
         const fps = frames.length / ((frameEnd - frames[0]) / 1000);
+        list.additionalInformation.frameTime = frameEnd - frames[frames.length - 1];
         frames.push(frameEnd);
         if (frames.length > 20) {
             frames.shift();
@@ -132,7 +133,7 @@ const drawWebGl = (
     controls: IControlsConfiguration
 ) => {
     visualizer.draw(gl, canvasInfo.width, canvasInfo.height, controls, list.changeHistory);
-    list.changeHistory = [];
+    list.changeHistory.length = 0;
 };
 
 const drawArray = (
@@ -173,5 +174,6 @@ const printInformation = (
         context.fillText('FPS: ' + information.fps, 0, fontSize * 4);
         context.fillText('Draw time: ' + information.drawTime + 'ms', 0, fontSize * 5);
         context.fillText('Calc time: ' + information.calculationTime + 'ms', 0, fontSize * 6);
+        context.fillText('Frame time: ' + information.frameTime + 'ms', 0, fontSize * 7);
     }
 };

@@ -31,7 +31,8 @@ export class AsyncListVisualizer {
         comparisons: 0,
         fps: 0,
         drawTime: 0,
-        calculationTime: 0
+        calculationTime: 0,
+        frameTime: 0
     };
 
     constructor(list: number[] = []) {

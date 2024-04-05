@@ -79,6 +79,9 @@ export const handleInput = (
         case 'show-fps':
             controls.showFps = target.checked;
             break;
+        case 'maxSampleSize':
+            controls.maxSampleSize = +target.value;
+            break;
         default:
             break;
     }

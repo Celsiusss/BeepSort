@@ -106,8 +106,9 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         gl.uniformMatrix4fv(this.projectionMatrixPosition, false, this.projectionMatrix);
         gl.uniform1f(this.columnsPosition, this.columns);
         gl.uniform1f(this.texWidthPosition, this.texWidth);
-        const sampleSize = Math.ceil(this.columns / width);
+        const sampleSize = Math.min(Math.ceil(this.columns / width), controls.maxSampleSize == 0 ? Infinity : controls.maxSampleSize);
         gl.uniform1i(this.sampleSizePosition, sampleSize);
+        console.log(sampleSize);
 
         for (const [i, e] of changes) {
             this.tex.set([e / this.columns], i);
@@ -202,7 +203,8 @@ const fShaderSrc = `#version 300 es
   }
   
   void main() {
-    color = vec4(0.0, 0.0, 0.0, 1.0);
+    color = vec4(0.0, 0.0, 0.0, 0.0);
+    int adds = 0;
     for (int i = 0; i < sampleSize; i++) {
       float p = uv.x * columns + float(i);
       float u = mod(p, texWidth);
@@ -213,8 +215,15 @@ const fShaderSrc = `#version 300 es
       float height = val.x;
     
       if (uv.y < height) {
-        color = vec4(hsl2rgb(vec3(height, 1.0, 0.5)), 1.0);
+        color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
+        // color += vec4(1.0) / float(sampleSize);
+        adds += 1;
+      } else {
+        color += vec4(color.rgb, 1.0) / float(sampleSize);
       }
+    //   color = texture(sampler, uv);
     }
+    float rem = color.a;
+    // color.rgb *= 1.0 / rem;
   }
   `;

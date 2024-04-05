@@ -11,6 +11,7 @@ export interface AdditionalAlgorithmInformation {
     fps: number;
     calculationTime: number;
     drawTime: number;
+    frameTime: number;
 }
 
 export interface RunOptions {
@@ -41,4 +42,5 @@ export interface IControlsConfiguration {
     showComparisons: boolean;
     showAccesses: boolean;
     showAlgoName: boolean;
+    maxSampleSize: number;
 }
