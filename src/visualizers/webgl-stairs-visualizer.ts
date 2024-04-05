@@ -29,8 +29,8 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         const maxGlTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 
         if (this.maxTexWidth > maxGlTexSize) {
-            alert("List length too large, max " + maxGlTexSize ** 2);
-            throw new Error("Too large texture size");
+            alert('List length too large, max ' + maxGlTexSize ** 2);
+            throw new Error('Too large texture size');
         }
 
         gl.getExtension('OES_texture_float_linear');
@@ -113,12 +113,20 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         gl.enable(gl.DEPTH_TEST); // Enable depth testing
         gl.depthFunc(gl.LEQUAL); // Near things obscure far things
 
+        const [_, __, prevWidth, prevHeight] = gl.getParameter(gl.VIEWPORT);
+        if (prevWidth !== width || prevHeight !== height) {
+            gl.viewport(0, 0, width, height);
+        }
+
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.uniformMatrix4fv(this.projectionMatrixPosition, false, this.projectionMatrix);
         gl.uniform1f(this.columnsPosition, this.columns);
         gl.uniform1f(this.texWidthPosition, this.texWidth);
-        const sampleSize = Math.min(Math.ceil(this.columns / width), controls.maxSampleSize == 0 ? Infinity : controls.maxSampleSize);
+        const sampleSize = Math.min(
+            Math.ceil(this.columns / width),
+            controls.maxSampleSize == 0 ? Infinity : controls.maxSampleSize
+        );
         gl.uniform1i(this.sampleSizePosition, sampleSize);
         gl.uniform1f(this.screenWidthPosition, width);
         gl.uniform1f(this.screenHeightPosition, height);
@@ -225,7 +233,7 @@ const fShaderSrc = `#version 300 es
     color = vec4(0.0, 0.0, 0.0, 0.0);
     int adds = 0;
     float columnWidth = screenWidth / columns;
-    float dotSize = 0.001;
+    float dotSize = 0.005;
     float dotWidth = (screenWidth * dotSize) / columnWidth;
     float dotHeight = dotSize;
     float dotDiff = dotWidth - 1.0;
@@ -269,14 +277,14 @@ const fShaderSrc = `#version 300 es
 //   uniform float columns;
 //   uniform float texWidth;
 //   uniform int sampleSize;
-  
+
 //   out vec4 color;
-  
+
 //   vec3 hsl2rgb( in vec3 c ) {
 //       vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
 //       return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
 //   }
-  
+
 //   void main() {
 //     color = vec4(0.0, 0.0, 0.0, 0.0);
 //     int adds = 0;
@@ -284,11 +292,11 @@ const fShaderSrc = `#version 300 es
 //       float p = uv.x * columns + float(i);
 //       float u = mod(p, texWidth);
 //       float v = floor(p / texWidth);
-    
+
 //       vec4 val = texelFetch(sampler, ivec2(u,v), 0);
 //       float h = val.y;
 //       float height = val.x;
-    
+
 //       if (uv.y < height) {
 //         color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
 //         // color += vec4(1.0) / float(sampleSize);

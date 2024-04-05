@@ -9,6 +9,7 @@ import { validateNumber } from './validators';
 
 const canvasContainer = <HTMLDivElement>document.getElementById('ccontainer');
 const canvas = <HTMLCanvasElement>document.getElementById('canvas');
+const webglCanvas = <HTMLCanvasElement>document.getElementById('webglCanvas');
 
 const onStart = async (runOptions: RunOptions) => {
     const button = document.getElementById(Contsants.Buttons.START) as HTMLButtonElement;
@@ -129,9 +130,10 @@ export const registerDomEvents = (configuration: Configuration, runOptions: RunO
         });
 
     window.addEventListener('resize', _ => {
-        console.log('resize');
         canvas.width = canvasContainer.clientWidth;
         canvas.height = canvasContainer.clientHeight;
+        webglCanvas.width = canvasContainer.clientWidth;
+        webglCanvas.height = canvasContainer.clientHeight;
         runOptions.canvasInfo.height = canvas.height;
         runOptions.canvasInfo.width = canvas.width;
     });
