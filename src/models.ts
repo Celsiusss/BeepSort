@@ -23,6 +23,7 @@ export interface RunOptions {
 
 export interface CanvasInfo {
     canvas: HTMLCanvasElement;
+    webglCanvas: HTMLCanvasElement;
     height: number;
     width: number;
 }

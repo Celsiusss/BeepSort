@@ -10,6 +10,7 @@ const algoSelect = <HTMLSelectElement>document.getElementById('algoSelect');
 const visSelect = <HTMLSelectElement>document.getElementById('visualizer-input');
 const canvasContainer = <HTMLDivElement>document.getElementById('ccontainer');
 const canvas = <HTMLCanvasElement>document.getElementById('canvas');
+const webglCanvas = <HTMLCanvasElement>document.getElementById('webglCanvas');
 const canvasOverlay = <HTMLCanvasElement>document.getElementById('overlay');
 // const context = canvas.getContext('2d');
 
@@ -31,6 +32,8 @@ const fillSelects = () => {
 (async () => {
     canvas.width = canvasContainer.clientWidth;
     canvas.height = canvasContainer.clientHeight;
+    webglCanvas.width = canvasContainer.clientWidth;
+    webglCanvas.height = canvasContainer.clientHeight;
     canvasOverlay.width = 400;
     canvasOverlay.height = 200;
     fillSelects();
@@ -42,6 +45,7 @@ const fillSelects = () => {
         list,
         canvasInfo: {
             canvas,
+            webglCanvas,
             height: canvas.height,
             width: canvas.width
         },

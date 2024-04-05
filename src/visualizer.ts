@@ -15,7 +15,7 @@ export const runVisualizer = async (options: RunOptions) => {
     const {
         list,
         configuration,
-        canvasInfo: { canvas },
+        canvasInfo: { canvas, webglCanvas },
         canvasInfo,
         isWebGl
     } = options;
@@ -29,6 +29,14 @@ export const runVisualizer = async (options: RunOptions) => {
     const overlayContext = options.canvasOverlay.getContext('2d');
 
     const sortingDone$ = new Subject();
+
+    if (isWebGl) {
+        canvas.style.display = 'none';
+        webglCanvas.style.display = 'block';
+    } else {
+        canvas.style.display = 'block';
+        webglCanvas.style.display = 'none';
+    }
 
     configuration.observable
         .pipe(
@@ -58,7 +66,7 @@ export const runVisualizer = async (options: RunOptions) => {
     ): context is WebGL2RenderingContext => {
         return isWebGl;
     };
-    const context = isWebGl ? canvas.getContext('webgl2') : canvas.getContext('2d');
+    const context = isWebGl ? webglCanvas.getContext('webgl2') : canvas.getContext('2d');
 
     if (isWebGLVisualizer(visualizer) && contextIsWebGl(context)) {
         list.recordChanges = true;
@@ -112,7 +120,9 @@ export const runVisualizer = async (options: RunOptions) => {
     await sortingAlgorithm.sort(list);
     sortingDone$.next();
     sortingDone$.complete();
-    setTimeout(() => cancelAnimationFrame(animationId), 100);
+    setTimeout(() => {
+        cancelAnimationFrame(animationId);
+    }, 100);
 };
 const drawWebGl = (
     list: AsyncListVisualizer,
