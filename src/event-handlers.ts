@@ -122,7 +122,7 @@ export const registerDomEvents = (configuration: Configuration, runOptions: RunO
         .item(0)
         .addEventListener('input', event => {
             handleInput(event as InputEvent, runOptions, configuration.controls);
-            configuration.inputHandler.bind(configuration);
+            configuration.inputHandler();
         });
 
     window.addEventListener('resize', _ => {

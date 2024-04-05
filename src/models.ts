@@ -9,12 +9,15 @@ export interface AdditionalAlgorithmInformation {
     arrayAccesses: number;
     comparisons: number;
     fps: number;
+    calculationTime: number;
+    drawTime: number;
 }
 
 export interface RunOptions {
     list: AsyncListVisualizer;
     configuration: Configuration;
     canvasInfo: CanvasInfo;
+    canvasOverlay: HTMLCanvasElement;
     isWebGl: boolean;
 }
 

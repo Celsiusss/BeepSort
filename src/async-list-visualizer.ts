@@ -22,12 +22,16 @@ export class AsyncListVisualizer {
     private delay = 4;
     private timeout = promisify(c => setTimeout(c, this.delay));
 
+    private calculationFrameStart = 0;
+
     public additionalInformation: AdditionalAlgorithmInformation = {
         shuffling: false,
         algorithmName: '',
         arrayAccesses: 0,
         comparisons: 0,
-        fps: 0
+        fps: 0,
+        drawTime: 0,
+        calculationTime: 0
     };
 
     constructor(list: number[] = []) {
@@ -53,17 +57,23 @@ export class AsyncListVisualizer {
         }
         return this.list[n];
     }
-    async set(n: number, e: number): Promise<void> {
+    async set(n: number, e: number, ignoreSim = false): Promise<void> {
         this.additionalInformation.arrayAccesses++;
         this.list[n] = e;
-        if (this.simulate) {
+        if (this.simulate && !ignoreSim) {
             if (this.recordChanges) {
                 this.changeHistory.push([n, e]);
             }
             if (this.drawCounter < this.drawEvery * this.speedMultiplier) {
+                if (this.drawCounter == 0) {
+                    this.calculationFrameStart = Date.now();
+                }
                 this.drawCounter++;
             } else {
+                this.additionalInformation.calculationTime =
+                    Date.now() - this.calculationFrameStart;
                 this.drawCounter = 0;
+                this.calculationFrameStart = 0;
                 this.playAudioFn(e);
                 await this.timeout();
                 if (this.paused) {
@@ -75,7 +85,8 @@ export class AsyncListVisualizer {
 
     async swap(x: number, y: number) {
         const tmp = this.get(x);
-        await this.set(x, this.get(y));
+        await this.set(x, this.get(y), true);
+        this.changeHistory.push([x, this.get(y)]);
         await this.set(y, tmp);
     }
 

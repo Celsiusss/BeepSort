@@ -16,6 +16,7 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
     private projectionMatrixPosition: WebGLUniformLocation;
     private columnsPosition: WebGLUniformLocation;
     private texWidthPosition: WebGLUniformLocation;
+    private sampleSizePosition: WebGLUniformLocation;
 
     private projectionMatrix: mat4;
 
@@ -60,6 +61,7 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
 
         this.columnsPosition = gl.getUniformLocation(shaderProgram, 'columns');
         this.texWidthPosition = gl.getUniformLocation(shaderProgram, 'texWidth');
+        this.sampleSizePosition = gl.getUniformLocation(shaderProgram, 'sampleSize');
 
         // texture
         const texture = gl.createTexture();
@@ -104,6 +106,8 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         gl.uniformMatrix4fv(this.projectionMatrixPosition, false, this.projectionMatrix);
         gl.uniform1f(this.columnsPosition, this.columns);
         gl.uniform1f(this.texWidthPosition, this.texWidth);
+        const sampleSize = Math.ceil(this.columns / width);
+        gl.uniform1i(this.sampleSizePosition, sampleSize);
 
         for (const [i, e] of changes) {
             this.tex.set([e / this.columns], i);
@@ -188,28 +192,29 @@ const fShaderSrc = `#version 300 es
   uniform sampler2D sampler;
   uniform float columns;
   uniform float texWidth;
+  uniform int sampleSize;
   
   out vec4 color;
   
   vec3 hsl2rgb( in vec3 c ) {
       vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
-  
       return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
   }
   
   void main() {
-    float p = uv.x * columns;
-    float u = mod(p, texWidth) / texWidth + (1.0 / (texWidth*texWidth));
-    float v = floor(p / texWidth) / texWidth + (1.0 / (texWidth*texWidth));
-  
-    vec4 val = texture(sampler, vec2(u,v));
-    float h = val.y;
-    float height = val.x;
-  
-    if (uv.y < height) {
-      color = vec4(hsl2rgb(vec3(height, 1.0, 0.5)), 1.0);
-    } else {
-      color = vec4(0.0, 0.0, 0.0, 1.0);
+    color = vec4(0.0, 0.0, 0.0, 1.0);
+    for (int i = 0; i < sampleSize; i++) {
+      float p = uv.x * columns + float(i);
+      float u = mod(p, texWidth);
+      float v = floor(p / texWidth);
+    
+      vec4 val = texelFetch(sampler, ivec2(u,v), 0);
+      float h = val.y;
+      float height = val.x;
+    
+      if (uv.y < height) {
+        color = vec4(hsl2rgb(vec3(height, 1.0, 0.5)), 1.0);
+      }
     }
   }
   `;

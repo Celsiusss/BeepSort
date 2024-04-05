@@ -26,6 +26,8 @@ export const runVisualizer = async (options: RunOptions) => {
     const algorithm = controls.algorithm;
     const audio = new Audio(listLength);
 
+    const overlayContext = options.canvasOverlay.getContext('2d');
+
     const sortingDone$ = new Subject();
 
     configuration.observable
@@ -34,6 +36,7 @@ export const runVisualizer = async (options: RunOptions) => {
                 list.drawEvery = controls.speed;
                 list.playAudioFn = controls.audio ? audio.update.bind(audio) : () => {};
                 list.changeDelay(controls.waitDelay);
+                console.log(controls.speed);
             }),
             takeUntil(sortingDone$)
         )
@@ -74,19 +77,23 @@ export const runVisualizer = async (options: RunOptions) => {
     const frames: number[] = [];
     let animationId: number;
     const drawCanvas = () => {
+        const frameStart = Date.now();
         if (!contextIsWebGl(context) && !isWebGLVisualizer(visualizer)) {
             drawArray(list, context, visualizer, canvasInfo, controls);
         }
         if (contextIsWebGl(context) && isWebGLVisualizer(visualizer)) {
             drawWebGl(list, context, visualizer, canvasInfo, controls);
         }
-        animationId = requestAnimationFrame(drawCanvas);
-        const fps = frames.length / ((Date.now() - frames[0]) / 1000);
-        frames.push(Date.now());
+        printInformation(list.additionalInformation, overlayContext, controls);
+        const frameEnd = Date.now();
+        const fps = frames.length / ((frameEnd - frames[0]) / 1000);
+        frames.push(frameEnd);
         if (frames.length > 20) {
             frames.shift();
         }
         list.additionalInformation.fps = Math.floor(fps);
+        list.additionalInformation.drawTime = frameEnd - frameStart;
+        animationId = requestAnimationFrame(drawCanvas);
     };
     animationId = requestAnimationFrame(drawCanvas);
 
@@ -105,7 +112,7 @@ export const runVisualizer = async (options: RunOptions) => {
     await sortingAlgorithm.sort(list);
     sortingDone$.next();
     sortingDone$.complete();
-    cancelAnimationFrame(animationId);
+    setTimeout(() => cancelAnimationFrame(animationId), 100);
 };
 const drawWebGl = (
     list: AsyncListVisualizer,
@@ -137,6 +144,8 @@ const printInformation = (
 ) => {
     const { algorithmName, arrayAccesses, comparisons } = information;
     const fontSize = 24;
+    context.fillStyle = '#000000';
+    context.fillRect(0, 0, 400, 200);
     context.font = fontSize + 'px serif';
     context.fillStyle = '#fff';
     if (information.shuffling) {
@@ -152,5 +161,7 @@ const printInformation = (
     context.fillText('Comparisons: ' + Intl.NumberFormat().format(comparisons), 0, fontSize * 3);
     if (controls.showFps) {
         context.fillText('FPS: ' + information.fps, 0, fontSize * 4);
+        context.fillText('Draw time: ' + information.drawTime + 'ms', 0, fontSize * 5);
+        context.fillText('Calc time: ' + information.calculationTime + 'ms', 0, fontSize * 6);
     }
 };
