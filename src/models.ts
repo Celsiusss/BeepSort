@@ -1,7 +1,7 @@
 import { Visualizer, WebGLVisualizer } from './visualizers/visualizer';
 import { Algorithms } from './algorithm-factory';
 import { AsyncListVisualizer } from './async-list-visualizer';
-import { Configuration } from './configuration';
+import { MutableRefObject } from 'react';
 
 export interface AdditionalAlgorithmInformation {
     shuffling: boolean;
@@ -16,15 +16,13 @@ export interface AdditionalAlgorithmInformation {
 
 export interface RunOptions {
     list: AsyncListVisualizer;
-    configuration: Configuration;
     canvasInfo: CanvasInfo;
-    canvasOverlay: HTMLCanvasElement;
-    isWebGl: boolean;
+    canvasOverlay: MutableRefObject<HTMLCanvasElement>;
 }
 
 export interface CanvasInfo {
-    canvas: HTMLCanvasElement;
-    webglCanvas: HTMLCanvasElement;
+    canvas: MutableRefObject<HTMLCanvasElement>;
+    webglCanvas: MutableRefObject<HTMLCanvasElement>;
     height: number;
     width: number;
 }

@@ -10,11 +10,20 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "type": "module",
     "devDependencies": {
         "@types/color-convert": "^2.0.0",
         "@types/es6-promisify": "^6.0.1",
         "@types/gl-matrix": "^3.2.0",
         "@types/html-webpack-plugin": "^3.2.6",
+        "@types/react": "^18.2.66",
+        "@types/react-dom": "^18.2.22",
+        "@typescript-eslint/eslint-plugin": "^7.2.0",
+        "@typescript-eslint/parser": "^7.2.0",
+        "@vitejs/plugin-react-swc": "^3.5.0",
+        "eslint": "^8.57.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.6",
         "prettier": "^3.2.5",
         "reset-css": "^5.0.2",
         "sass": "^1.74.1",
@@ -24,6 +33,9 @@
     "dependencies": {
         "es6-promisify": "^6.1.1",
         "gl-matrix": "^3.4.3",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-hook-form": "^7.51.2",
         "rxjs": "^6.6.3",
         "tone": "^14.7.58"
     }

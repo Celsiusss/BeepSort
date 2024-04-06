@@ -1,7 +1,6 @@
 import { Visualizer } from './visualizer';
 import { IControlsConfiguration } from '../models';
 import { AsyncListVisualizer } from '../async-list-visualizer';
-import { hsl } from 'color-convert';
 
 export class PyramidVisualizer implements Visualizer {
     type = 'normal' as const;

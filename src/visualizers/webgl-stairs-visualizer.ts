@@ -1,4 +1,4 @@
-import { mat2, mat4 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import { AsyncListVisualizer } from '../async-list-visualizer';
 import { IControlsConfiguration } from '../models';
 import { WebGLVisualizer } from './visualizer';

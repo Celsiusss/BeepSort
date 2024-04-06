@@ -1,7 +1,6 @@
 import { Visualizer } from './visualizer';
 import { AsyncListVisualizer } from '../async-list-visualizer';
 import { IControlsConfiguration } from '../models';
-import { hsl } from 'color-convert';
 
 export class CircleVisualizer implements Visualizer {
     type = 'normal' as const;

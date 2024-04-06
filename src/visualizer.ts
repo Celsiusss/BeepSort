@@ -10,32 +10,32 @@ import {
     RunOptions,
     IControlsConfiguration
 } from './models';
+import { Configuration } from './configuration';
 
-export const runVisualizer = async (options: RunOptions) => {
+export const runVisualizer = async (options: RunOptions, configuration: Configuration) => {
     const {
         list,
-        configuration,
         canvasInfo: { canvas, webglCanvas },
-        canvasInfo,
-        isWebGl
+        canvasInfo
     } = options;
     const controls = configuration.controls;
     const visualizer = controls.visualizer;
+    const isWebGl = visualizer.type === 'webgl';
 
     const listLength = controls.listLength;
     const algorithm = controls.algorithm;
     const audio = new Audio(listLength);
 
-    const overlayContext = options.canvasOverlay.getContext('2d');
+    const overlayContext = options.canvasOverlay.current.getContext('2d');
 
     const sortingDone$ = new Subject();
 
     if (isWebGl) {
-        canvas.style.display = 'none';
-        webglCanvas.style.display = 'block';
+        canvas.current.style.display = 'none';
+        webglCanvas.current.style.display = 'block';
     } else {
-        canvas.style.display = 'block';
-        webglCanvas.style.display = 'none';
+        canvas.current.style.display = 'block';
+        webglCanvas.current.style.display = 'none';
     }
 
     configuration.observable
@@ -65,7 +65,9 @@ export const runVisualizer = async (options: RunOptions) => {
     ): context is WebGL2RenderingContext => {
         return isWebGl;
     };
-    const context = isWebGl ? webglCanvas.getContext('webgl2') : canvas.getContext('2d');
+    const context = isWebGl
+        ? webglCanvas.current.getContext('webgl2')
+        : canvas.current.getContext('2d');
 
     if (isWebGLVisualizer(visualizer) && contextIsWebGl(context)) {
         list.recordChanges = true;
@@ -75,7 +77,7 @@ export const runVisualizer = async (options: RunOptions) => {
     if (!contextIsWebGl(context)) {
         context.imageSmoothingEnabled = false;
         context.fillStyle = '#000000';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillRect(0, 0, canvas.current.width, canvas.current.height);
     }
 
     list.drawEvery = controls.speed;
@@ -91,6 +93,7 @@ export const runVisualizer = async (options: RunOptions) => {
         if (contextIsWebGl(context) && isWebGLVisualizer(visualizer)) {
             drawWebGl(list, context, visualizer, canvasInfo, controls);
         }
+        console.log(canvasInfo.width);
         printInformation(list.additionalInformation, overlayContext, controls);
         const frameEnd = Date.now();
         const fps = frames.length / ((frameEnd - frames[0]) / 1000);
