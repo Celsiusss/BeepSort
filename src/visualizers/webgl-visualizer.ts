@@ -1,9 +1,13 @@
 import { mat4 } from 'gl-matrix';
 import { AsyncListVisualizer } from '../async-list-visualizer';
 import { IControlsConfiguration } from '../models';
-import { WebGLVisualizer } from './visualizer';
+import { IWebGLVisualizer } from './visualizer';
 
-export class WebGLStairsVisualizer implements WebGLVisualizer {
+import vertexShaderSource from './shaders/vertex.glsl?raw';
+import dotsFragShaderSrc from './shaders/dots-frag.glsl?raw';
+import barsFragShaderSrc from './shaders/bars-frag.glsl?raw';
+
+export class WebGLVisualizer implements IWebGLVisualizer {
     type = 'webgl' as const;
 
     private tex: Float32Array;
@@ -13,6 +17,11 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
     private columns: number;
     private maxTexWidth: number;
 
+    private shaderProgram: WebGLProgram;
+    private columnDataTexture: WebGLTexture;
+    private vertexShader = WebGLShader['prototype'];
+    private fragmentShader = WebGLShader['prototype'];
+
     private projectionMatrixPosition: WebGLUniformLocation;
     private columnsPosition: WebGLUniformLocation;
     private texWidthPosition: WebGLUniformLocation;
@@ -21,6 +30,8 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
     private screenHeightPosition: WebGLUniformLocation;
 
     private projectionMatrix: mat4;
+
+    constructor(private shader: 'stairs' | 'dots') {}
 
     init(gl: WebGL2RenderingContext, list: AsyncListVisualizer): void {
         this.columns = list.length;
@@ -35,22 +46,26 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
 
         gl.getExtension('OES_texture_float_linear');
 
-        const vShader = loadShader(gl, gl.VERTEX_SHADER, vShaderSrc);
-        const fShader = loadShader(gl, gl.FRAGMENT_SHADER, fShaderSrc);
+        this.vertexShader = loadShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+        this.fragmentShader = loadShader(
+            gl,
+            gl.FRAGMENT_SHADER,
+            this.shader === 'stairs' ? barsFragShaderSrc : dotsFragShaderSrc
+        );
 
-        const shaderProgram = gl.createProgram();
-        if (!shaderProgram) {
+        this.shaderProgram = gl.createProgram();
+        if (!this.shaderProgram) {
             throw new Error('wtf');
         }
-        gl.attachShader(shaderProgram, vShader);
-        gl.attachShader(shaderProgram, fShader);
-        gl.linkProgram(shaderProgram);
+        gl.attachShader(this.shaderProgram, this.vertexShader);
+        gl.attachShader(this.shaderProgram, this.fragmentShader);
+        gl.linkProgram(this.shaderProgram);
 
-        gl.useProgram(shaderProgram);
+        gl.useProgram(this.shaderProgram);
 
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
             console.error(
-                `Unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`
+                `Unable to initialize the shader program: ${gl.getProgramInfoLog(this.shaderProgram)}`
             );
             throw new Error('iskjdfhg');
         }
@@ -60,24 +75,28 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         const positions = [0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
-        const vertexPosition = gl.getAttribLocation(shaderProgram, 'vertexPosition');
+        const vertexPosition = gl.getAttribLocation(this.shaderProgram, 'vertexPosition');
         gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vertexPosition);
 
         // projection
-        this.projectionMatrixPosition = gl.getUniformLocation(shaderProgram, 'projectionMatrix');
+        this.projectionMatrixPosition = gl.getUniformLocation(
+            this.shaderProgram,
+            'projectionMatrix'
+        );
         this.projectionMatrix = mat4.create();
         mat4.ortho(this.projectionMatrix, 0, 100, 0, 100, -1.0, 1.0);
 
-        this.columnsPosition = gl.getUniformLocation(shaderProgram, 'columns');
-        this.texWidthPosition = gl.getUniformLocation(shaderProgram, 'texWidth');
-        this.sampleSizePosition = gl.getUniformLocation(shaderProgram, 'sampleSize');
-        this.screenWidthPosition = gl.getUniformLocation(shaderProgram, 'screenWidth');
-        this.screenHeightPosition = gl.getUniformLocation(shaderProgram, 'screenHeight');
+        // unforms
+        this.columnsPosition = gl.getUniformLocation(this.shaderProgram, 'columns');
+        this.texWidthPosition = gl.getUniformLocation(this.shaderProgram, 'texWidth');
+        this.sampleSizePosition = gl.getUniformLocation(this.shaderProgram, 'sampleSize');
+        this.screenWidthPosition = gl.getUniformLocation(this.shaderProgram, 'screenWidth');
+        this.screenHeightPosition = gl.getUniformLocation(this.shaderProgram, 'screenHeight');
 
         // texture
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        this.columnDataTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.columnDataTexture);
         const { tex, width: texWidth, height: texHeight } = this.genTex(list);
         this.tex = tex;
         this.texWidth = texWidth;
@@ -92,13 +111,13 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
         const textureCoordinates = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
-        const textureCoordPosition = gl.getAttribLocation(shaderProgram, 'textureCoord');
+        const textureCoordPosition = gl.getAttribLocation(this.shaderProgram, 'textureCoord');
         gl.vertexAttribPointer(textureCoordPosition, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(textureCoordPosition);
 
-        const samplerPosition = gl.getUniformLocation(shaderProgram, 'sampler');
+        const samplerPosition = gl.getUniformLocation(this.shaderProgram, 'sampler');
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.bindTexture(gl.TEXTURE_2D, this.columnDataTexture);
         gl.uniform1i(samplerPosition, 0);
     }
     draw(
@@ -150,6 +169,13 @@ export class WebGLStairsVisualizer implements WebGLVisualizer {
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 
+    public destroy(gl: WebGL2RenderingContext) {
+        gl.deleteTexture(this.columnDataTexture);
+        gl.deleteShader(this.fragmentShader);
+        gl.deleteShader(this.vertexShader);
+        gl.deleteProgram(this.shaderProgram);
+    }
+
     private genTex(list: AsyncListVisualizer): {
         tex: Float32Array;
         width: number;
@@ -195,118 +221,3 @@ function loadShader(gl: WebGL2RenderingContext, type: number, source: string): W
 
     return shader;
 }
-
-const vShaderSrc = `#version 300 es
-  in vec4 vertexPosition;
-  in vec4 textureCoord;
-  uniform mat4 projectionMatrix;
-  
-  out vec2 uv;
-  
-  void main() {
-    gl_Position = projectionMatrix * vertexPosition;
-    uv = textureCoord.xy;
-  }
-  `;
-const fShaderSrc = `#version 300 es
-  precision highp float;
-  in vec2 uv;
-  uniform sampler2D sampler;
-  uniform float columns;
-  uniform float texWidth;
-  uniform int sampleSize;
-
-  uniform float screenWidth;
-  uniform float screenHeight;
-  
-  out vec4 color;
-  
-  vec3 hsl2rgb( in vec3 c ) {
-      vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
-      return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
-  }
-  vec3 colorize(in float uvy, in float height, in float dotHeight) {
-    return hsl2rgb(vec3(-height - 0.29, 1.0, 0.5));
-  }
-  
-  void main() {
-    color = vec4(0.0, 0.0, 0.0, 0.0);
-    int adds = 0;
-    float columnWidth = screenWidth / columns;
-    float dotSize = 0.005;
-    float dotWidth = (screenWidth * dotSize) / columnWidth;
-    float dotHeight = dotSize;
-    float dotDiff = dotWidth - 1.0;
-    float p = uv.x * columns;
-    float u = mod(p, texWidth);
-    float v = floor(p / texWidth);
-
-    float sp = p - floor(p);
-
-    vec4 val = texelFetch(sampler, ivec2(u,v), 0);
-    float h = val.y;
-    float height = val.x;
-
-    if (uv.y < height && uv.y > height - dotHeight && sp < dotWidth ) {
-        color = vec4(colorize(uv.y, height, dotHeight), 1.0);
-    } else {
-        color = vec4(color.rgb, 1.0);
-        if (dotDiff >= 0.0) {
-            float normalizedDotDiff = dotDiff * columnWidth / screenWidth;
-            for (float j = 0.0; j <= normalizedDotDiff; j += 1.0 / columns) {
-                p = (uv.x - normalizedDotDiff + j) * columns;
-                u = mod(p, texWidth);
-                v = floor(p / texWidth);
-                float height = texelFetch(sampler, ivec2(u,v), 0).x;
-                if (uv.y < height && uv.y > height - dotHeight) {
-                    color = vec4(colorize(uv.y, height, dotHeight), 1.0);
-                }
-            }
-        }
-
-    //   color = texture(sampler, uv);
-    }
-    float rem = color.a;
-    // color.rgb *= 1.0 / rem;
-  }
-  `;
-//   const fShaderSrc = `#version 300 es
-//   precision highp float;
-//   in vec2 uv;
-//   uniform sampler2D sampler;
-//   uniform float columns;
-//   uniform float texWidth;
-//   uniform int sampleSize;
-
-//   out vec4 color;
-
-//   vec3 hsl2rgb( in vec3 c ) {
-//       vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
-//       return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
-//   }
-
-//   void main() {
-//     color = vec4(0.0, 0.0, 0.0, 0.0);
-//     int adds = 0;
-//     for (int i = 0; i < sampleSize; i++) {
-//       float p = uv.x * columns + float(i);
-//       float u = mod(p, texWidth);
-//       float v = floor(p / texWidth);
-
-//       vec4 val = texelFetch(sampler, ivec2(u,v), 0);
-//       float h = val.y;
-//       float height = val.x;
-
-//       if (uv.y < height) {
-//         color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
-//         // color += vec4(1.0) / float(sampleSize);
-//         adds += 1;
-//       } else {
-//         color += vec4(color.rgb, 1.0) / float(sampleSize);
-//       }
-//     //   color = texture(sampler, uv);
-//     }
-//     float rem = color.a;
-//     // color.rgb *= 1.0 / rem;
-//   }
-//   `;

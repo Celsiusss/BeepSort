@@ -4,7 +4,7 @@ import { runVisualizer } from '../visualizer';
 import { ConfigurationContext, RunOptionsContext } from '../app';
 import { useForm } from 'react-hook-form';
 import { IControlsConfiguration } from '../models';
-import { VisualizerFactory, Visualizers, visualizers } from '../visualizer-factory';
+import { Visualizers } from '../visualizer-factory';
 import { Algorithms } from '../algorithm-factory';
 
 type FormData = Omit<IControlsConfiguration, 'visualizer'> & { visualizer: Visualizers };
@@ -26,10 +26,19 @@ export function Controls() {
     };
 
     const setConfigurationControls = (data: FormData) => {
-        configuration.controls = {
-            ...data,
-            visualizer: VisualizerFactory.visualizer(data.visualizer)
-        };
+        configuration.controls.speed = data.speed;
+        configuration.controls.waitDelay = data.waitDelay;
+        configuration.controls.audio = data.audio;
+        configuration.controls.colors = data.colors;
+        configuration.controls.algorithm = data.algorithm;
+        configuration.controls.visualizer = +data.visualizer;
+        configuration.controls.listLength = data.listLength;
+        configuration.controls.animateShuffle = data.animateShuffle;
+        configuration.controls.showFps = data.showFps;
+        configuration.controls.showComparisons = data.showComparisons;
+        configuration.controls.showAccesses = data.showAccesses;
+        configuration.controls.showAlgoName = data.showAlgoName;
+        configuration.controls.maxSampleSize = data.maxSampleSize;
         configuration.emitValues();
     };
 
@@ -142,11 +151,13 @@ export function Controls() {
                                 id="visualizer-input"
                                 {...register('visualizer')}
                             >
-                                {visualizers.map(visualizer => (
-                                    <option value={visualizer} key={visualizer}>
-                                        {visualizer}
-                                    </option>
-                                ))}
+                                {Object.values(Visualizers)
+                                    .filter(v => typeof Visualizers[v] === 'string')
+                                    .map(visualizer => (
+                                        <option value={visualizer} key={visualizer}>
+                                            {Visualizers[visualizer]}
+                                        </option>
+                                    ))}
                             </select>
                         </label>
                         <label className="controls-label">

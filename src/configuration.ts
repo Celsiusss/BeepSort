@@ -1,12 +1,12 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Algorithms } from './algorithm-factory';
 import { IControlsConfiguration } from './models';
-import { VisualizerFactory } from './visualizer-factory';
+import { Visualizers } from './visualizer-factory';
 
 export class Configuration {
     public controls: IControlsConfiguration;
-    public observable: Observable<IControlsConfiguration>;
 
+    public observable: Observable<IControlsConfiguration>;
     private subject: BehaviorSubject<IControlsConfiguration>;
 
     constructor(controls: Partial<IControlsConfiguration> = {}) {
@@ -18,7 +18,7 @@ export class Configuration {
             audio: false,
             listLength: 0,
             algorithm: Algorithms.QuickSort,
-            visualizer: VisualizerFactory.visualizer('stairs'),
+            visualizer: Visualizers.Stairs,
             animateShuffle: false,
             showFps: false,
             showComparisons: false,

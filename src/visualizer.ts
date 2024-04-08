@@ -1,9 +1,8 @@
 import { AsyncListVisualizer } from './async-list-visualizer';
-import { Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
+import { filter, tap } from 'rxjs/operators';
 import { Audio } from './audio';
 import { AlgorithmFactory } from './algorithm-factory';
-import { Visualizer, WebGLVisualizer, isWebGLVisualizer } from './visualizers/visualizer';
+import { Visualizer, IWebGLVisualizer, isWebGLVisualizer } from './visualizers/visualizer';
 import {
     AdditionalAlgorithmInformation,
     CanvasInfo,
@@ -11,6 +10,7 @@ import {
     IControlsConfiguration
 } from './models';
 import { Configuration } from './configuration';
+import { VisualizerFactory } from './visualizer-factory';
 
 export const runVisualizer = async (options: RunOptions, configuration: Configuration) => {
     const {
@@ -19,8 +19,9 @@ export const runVisualizer = async (options: RunOptions, configuration: Configur
         canvasInfo
     } = options;
     const controls = configuration.controls;
-    const visualizer = controls.visualizer;
-    const isWebGl = visualizer.type === 'webgl';
+    let selectedVisualizer = configuration.controls.visualizer;
+    let visualizer = VisualizerFactory.visualizer(selectedVisualizer);
+    let isWebGl = visualizer.type === 'webgl';
 
     const listLength = controls.listLength;
     const algorithm = controls.algorithm;
@@ -28,7 +29,14 @@ export const runVisualizer = async (options: RunOptions, configuration: Configur
 
     const overlayContext = options.canvasOverlay.current.getContext('2d');
 
-    const sortingDone$ = new Subject();
+    const contextIsWebGl = (
+        context: CanvasRenderingContext2D | WebGL2RenderingContext
+    ): context is WebGL2RenderingContext => {
+        return isWebGl;
+    };
+    let context = isWebGl
+        ? webglCanvas.current.getContext('webgl2')
+        : canvas.current.getContext('2d');
 
     if (isWebGl) {
         canvas.current.style.display = 'none';
@@ -38,14 +46,38 @@ export const runVisualizer = async (options: RunOptions, configuration: Configur
         webglCanvas.current.style.display = 'none';
     }
 
-    configuration.observable
+    const configurationSubscription = configuration.observable
         .pipe(
             tap(controls => {
                 list.drawEvery = controls.speed;
                 list.playAudioFn = controls.audio ? audio.update.bind(audio) : () => {};
                 list.changeDelay(controls.waitDelay);
             }),
-            takeUntil(sortingDone$)
+            filter(newControls => selectedVisualizer !== newControls.visualizer),
+            tap(controls => {
+                // Re-create and change to new visualizer
+                selectedVisualizer = controls.visualizer;
+                list.recordChanges = false;
+                if (isWebGLVisualizer(visualizer) && contextIsWebGl(context)) {
+                    visualizer.destroy(context);
+                }
+                visualizer = VisualizerFactory.visualizer(controls.visualizer);
+                isWebGl = visualizer.type === 'webgl';
+                context = isWebGl
+                    ? webglCanvas.current.getContext('webgl2')
+                    : canvas.current.getContext('2d');
+                if (isWebGLVisualizer(visualizer) && contextIsWebGl(context)) {
+                    visualizer.init(context, list);
+                    list.recordChanges = true;
+                }
+                if (isWebGl) {
+                    canvas.current.style.display = 'none';
+                    webglCanvas.current.style.display = 'block';
+                } else {
+                    canvas.current.style.display = 'block';
+                    webglCanvas.current.style.display = 'none';
+                }
+            })
         )
         .subscribe();
 
@@ -59,15 +91,6 @@ export const runVisualizer = async (options: RunOptions, configuration: Configur
     list.simulate = controls.animateShuffle;
     await list.populate(listLength, true);
     list.simulate = true;
-
-    const contextIsWebGl = (
-        context: CanvasRenderingContext2D | WebGL2RenderingContext
-    ): context is WebGL2RenderingContext => {
-        return isWebGl;
-    };
-    const context = isWebGl
-        ? webglCanvas.current.getContext('webgl2')
-        : canvas.current.getContext('2d');
 
     if (isWebGLVisualizer(visualizer) && contextIsWebGl(context)) {
         list.recordChanges = true;
@@ -93,7 +116,6 @@ export const runVisualizer = async (options: RunOptions, configuration: Configur
         if (contextIsWebGl(context) && isWebGLVisualizer(visualizer)) {
             drawWebGl(list, context, visualizer, canvasInfo, controls);
         }
-        console.log(canvasInfo.width);
         printInformation(list.additionalInformation, overlayContext, controls);
         const frameEnd = Date.now();
         const fps = frames.length / ((frameEnd - frames[0]) / 1000);
@@ -121,16 +143,16 @@ export const runVisualizer = async (options: RunOptions, configuration: Configur
 
     const sortingAlgorithm = AlgorithmFactory.getAlgorithm(algorithm);
     await sortingAlgorithm.sort(list);
-    sortingDone$.next();
-    sortingDone$.complete();
+    configurationSubscription.unsubscribe();
     setTimeout(() => {
         cancelAnimationFrame(animationId);
+        isWebGLVisualizer(visualizer) && contextIsWebGl(context) && visualizer.destroy(context);
     }, 100);
 };
 const drawWebGl = (
     list: AsyncListVisualizer,
     gl: WebGL2RenderingContext,
-    visualizer: WebGLVisualizer,
+    visualizer: IWebGLVisualizer,
     canvasInfo: CanvasInfo,
     controls: IControlsConfiguration
 ) => {
@@ -147,7 +169,6 @@ const drawArray = (
 ) => {
     list.countAccesses = false;
     visualizer.draw(context, canvasInfo.width, canvasInfo.height, controls, list);
-    printInformation(list.additionalInformation, context, controls);
     list.countAccesses = true;
 };
 const printInformation = (

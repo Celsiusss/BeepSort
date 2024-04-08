@@ -1,29 +1,36 @@
-import { Visualizer, WebGLVisualizer } from './visualizers/visualizer';
+import { Visualizer, IWebGLVisualizer } from './visualizers/visualizer';
 import { StairsVisualizer } from './visualizers/stairs-visualizer';
 import { PyramidVisualizer } from './visualizers/pyramid-visualizer';
 import { DotsVisualizer } from './visualizers/dots-visualizer';
 import { CircleVisualizer } from './visualizers/circle-visualizer';
-import { WebGLStairsVisualizer } from './visualizers/webgl-stairs-visualizer';
+import { WebGLVisualizer } from './visualizers/webgl-visualizer';
 
 export class VisualizerFactory {
-    static visualizer(visualizer: Visualizers): Visualizer | WebGLVisualizer {
+    static visualizer(visualizer: Visualizers): Visualizer | IWebGLVisualizer {
         switch (visualizer) {
-            case 'stairs':
+            case Visualizers.Stairs:
                 return new StairsVisualizer();
-            case 'pyramid':
+            case Visualizers.Pyramid:
                 return new PyramidVisualizer();
-            case 'dots':
+            case Visualizers.Dots:
                 return new DotsVisualizer();
-            case 'circle':
+            case Visualizers.Circle:
                 return new CircleVisualizer();
-            case 'webgl':
-                return new WebGLStairsVisualizer();
+            case Visualizers.Webgl_Stairs:
+                return new WebGLVisualizer('stairs');
+            case Visualizers.Webgl_Dots:
+                return new WebGLVisualizer('dots');
             default:
                 throw new Error(`${visualizer} not allowed`);
         }
     }
 }
 
-export const visualizers: Visualizers[] = ['stairs', 'pyramid', 'dots', 'circle', 'webgl'];
-
-export type Visualizers = 'stairs' | 'pyramid' | 'dots' | 'circle' | 'webgl';
+export enum Visualizers {
+    Stairs,
+    Pyramid,
+    Dots,
+    Circle,
+    Webgl_Stairs,
+    Webgl_Dots
+}

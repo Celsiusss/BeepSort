@@ -1,7 +1,7 @@
-import { Visualizer, WebGLVisualizer } from './visualizers/visualizer';
 import { Algorithms } from './algorithm-factory';
 import { AsyncListVisualizer } from './async-list-visualizer';
 import { MutableRefObject } from 'react';
+import { Visualizers } from './visualizer-factory';
 
 export interface AdditionalAlgorithmInformation {
     shuffling: boolean;
@@ -33,7 +33,7 @@ export interface IControlsConfiguration {
     audio: boolean;
     colors: boolean;
     algorithm: Algorithms;
-    visualizer: Visualizer | WebGLVisualizer;
+    visualizer: Visualizers;
     listLength: number;
     animateShuffle: boolean;
     showFps: boolean;

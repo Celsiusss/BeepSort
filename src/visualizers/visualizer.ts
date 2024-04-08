@@ -2,7 +2,7 @@ import { AsyncListVisualizer } from '../async-list-visualizer';
 import { IControlsConfiguration } from '../models';
 
 export interface Visualizer {
-    type: "normal";
+    type: 'normal';
     draw(
         context: CanvasRenderingContext2D,
         width: number,
@@ -11,8 +11,8 @@ export interface Visualizer {
         list: AsyncListVisualizer
     ): void;
 }
-export interface WebGLVisualizer {
-    type: "webgl";
+export interface IWebGLVisualizer {
+    type: 'webgl';
 
     init(context: WebGL2RenderingContext, list: AsyncListVisualizer): void;
 
@@ -23,7 +23,11 @@ export interface WebGLVisualizer {
         controls: IControlsConfiguration,
         changes: [number, number][]
     ): void;
+
+    destroy(context: WebGL2RenderingContext): void;
 }
-export function isWebGLVisualizer(visualizer: Visualizer | WebGLVisualizer): visualizer is WebGLVisualizer {
-    return visualizer.type == "webgl";
+export function isWebGLVisualizer(
+    visualizer: Visualizer | IWebGLVisualizer
+): visualizer is IWebGLVisualizer {
+    return visualizer.type == 'webgl';
 }
