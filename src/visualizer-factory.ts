@@ -20,6 +20,8 @@ export class VisualizerFactory {
                 return new WebGLVisualizer('stairs');
             case Visualizers.Webgl_Dots:
                 return new WebGLVisualizer('dots');
+            case Visualizers.Webgl_Circle:
+                return new WebGLVisualizer('circle');
             default:
                 throw new Error(`${visualizer} not allowed`);
         }
@@ -32,5 +34,6 @@ export enum Visualizers {
     Dots,
     Circle,
     Webgl_Stairs,
-    Webgl_Dots
+    Webgl_Dots,
+    Webgl_Circle
 }

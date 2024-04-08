@@ -6,6 +6,7 @@ import { IWebGLVisualizer } from './visualizer';
 import vertexShaderSource from './shaders/vertex.glsl?raw';
 import dotsFragShaderSrc from './shaders/dots-frag.glsl?raw';
 import barsFragShaderSrc from './shaders/bars-frag.glsl?raw';
+import circleFragShaderSrc from './shaders/circle-frag.glsl?raw';
 
 export class WebGLVisualizer implements IWebGLVisualizer {
     type = 'webgl' as const;
@@ -31,7 +32,7 @@ export class WebGLVisualizer implements IWebGLVisualizer {
 
     private projectionMatrix: mat4;
 
-    constructor(private shader: 'stairs' | 'dots') {}
+    constructor(private shader: 'stairs' | 'dots' | 'circle') {}
 
     init(gl: WebGL2RenderingContext, list: AsyncListVisualizer): void {
         this.columns = list.length;
@@ -50,7 +51,11 @@ export class WebGLVisualizer implements IWebGLVisualizer {
         this.fragmentShader = loadShader(
             gl,
             gl.FRAGMENT_SHADER,
-            this.shader === 'stairs' ? barsFragShaderSrc : dotsFragShaderSrc
+            this.shader === 'stairs'
+                ? barsFragShaderSrc
+                : this.shader === 'dots'
+                  ? dotsFragShaderSrc
+                  : circleFragShaderSrc
         );
 
         this.shaderProgram = gl.createProgram();

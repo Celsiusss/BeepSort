@@ -6,6 +6,10 @@ uniform float columns;
 uniform float texWidth;
 uniform int sampleSize;
 
+uniform float screenWidth;
+uniform float screenHeight;
+
+
 out vec4 color;
 
 vec3 hsl2rgb( in vec3 c ) {
@@ -15,9 +19,14 @@ vec3 hsl2rgb( in vec3 c ) {
 
 void main() {
     color = vec4(0.0, 0.0, 0.0, 0.0);
-    int adds = 0;
+    float minSize = min(screenWidth, screenHeight);
+    float x = (uv.x / minSize * screenWidth * 2.0 - 1.0) * -1.0;
+    float y = (uv.y / minSize * screenHeight * 2.0 - 1.0) * -1.0;
+    float r = sqrt(pow(x, 2.0) + pow(y, 2.0));
+    float angle = 3.14159 - atan(y, x);
+
     for (int i = 0; i < sampleSize; i++) {
-        float p = uv.x * columns + float(i);
+        float p = (angle / (2.0*3.14159)) * columns + float(i);
         float u = mod(p, texWidth);
         float v = floor(p / texWidth);
 
@@ -25,14 +34,11 @@ void main() {
         float h = val.y;
         float height = val.x;
 
-        if (uv.y < height) {
-            color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
-            // color += vec4(1.0) / float(sampleSize);
-            adds += 1;
-        } else {
-            color += vec4(color.rgb, 1.0) / float(sampleSize);
+
+        color += vec4(hsl2rgb(vec3(-height - 0.29, 1.0, 0.5)), 1.0) / float(sampleSize);
+        if (r > 1.0) {
+            color = vec4(vec3(0.0), 1.0);
         }
-    //   color = texture(sampler, uv);
     }
     float rem = color.a;
     // color.rgb *= 1.0 / rem;
